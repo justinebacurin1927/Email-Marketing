@@ -18,3 +18,6 @@ Route::get('/audience', function () {
     return view('audience');
 });
 
+Route::get('audience/inbox', function () {
+    return view('inbox');
+});

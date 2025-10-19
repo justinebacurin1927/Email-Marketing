@@ -3,16 +3,17 @@
 
   <div class="px-4 py-4 mt-5">
     <!-- HEADER -->
-    <header class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h1 class="h4 fw-bold text-dark mb-1">All campaigns</h1>
-        <p class="text-secondary small mb-0">Manage and track your email campaigns</p>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-secondary">View analytics</button>
-        <button class="btn btn-primary">Create</button>
-      </div>
-    </header>
+<header class="d-flex justify-content-between align-items-center mb-4 sticky-section">
+  <div>
+    <h1 class="h4 fw-bold text-dark mb-1">All campaigns</h1>
+    <p class="text-secondary small mb-0">Manage and track your email campaigns</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-outline-secondary">View analytics</button>
+    <button class="btn btn-primary">Create</button>
+  </div>
+</header>
+
 
     <!-- CARD -->
     <section class="bg-white border rounded p-3 mb-4 shadow-sm">
@@ -130,6 +131,8 @@
           </div>
         </div>
 
+        
+
         <div id="calendar" style="min-height: 600px; width: 100%; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.375rem;"></div>
       </div>
     </section>
@@ -140,6 +143,22 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/main.min.js"></script>
   
   <style>
+    /* Make the section header sticky */
+  .sticky-section {
+    position: sticky;
+    top: 70px; /* adjust if you have a topbar above */
+    background-color: #ffffff; /* same as body or card bg */
+    z-index: 100;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  /* Optional: add some extra margin to avoid jump */
+  section.bg-white {
+    margin-top: 0; /* header already has mb-4 */
+  }
+
     /* Ensure calendar container is visible */
     #calendar {
       width: 100%;

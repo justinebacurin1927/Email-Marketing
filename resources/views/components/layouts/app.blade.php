@@ -11,11 +11,10 @@
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body class="bg-light text-dark">
-  <div class="d-flex min-vh-100">
+<body>
+  <div class="d-flex">
     @include('layouts.sidebar')
-
-    <div class="flex-grow-1 p-4 bg-light">
+    <div class="flex-grow-1">
       {{ $slot }}
     </div>
   </div>

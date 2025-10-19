@@ -1,18 +1,8 @@
 <x-layouts.app>
   <x-topbar />
+  <x-top-auto />
 
   <div class="container-fluid px-4 py-5 mt-4">
-
-<!-- HEADER (STICKY) -->
-<div class="d-flex justify-content-between align-items-center mb-4 bg-white py-3 px-2 sticky-top shadow-sm" style="z-index: 1030;">
-  <div>
-    <h4 class="fw-bold text-dark mb-1">Automations</h4>
-  </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-outline-secondary">Build from scratch</button>
-    <button class="btn btn-primary">Choose flow template</button>
-  </div>
-</div>
 
 <!-- FILTERING DROPDOWNS (Multi-select with checkboxes + 'All' option) -->
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -955,6 +945,7 @@ document.addEventListener("DOMContentLoaded", function () {
   border-color: #0a58ca !important;
   color: #fff !important;
 }
+
 </style>
 
 </x-layouts.app>

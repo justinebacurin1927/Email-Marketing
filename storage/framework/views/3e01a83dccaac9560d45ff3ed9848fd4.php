@@ -28,19 +28,28 @@
 <?php $component = $__componentOriginal7f27d4f21ff184c2d29c20efafbd7387; ?>
 <?php unset($__componentOriginal7f27d4f21ff184c2d29c20efafbd7387); ?>
 <?php endif; ?>
+  <?php if (isset($component)) { $__componentOriginal4d33b6e4b4cf71e4238e58b43283f8f6 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal4d33b6e4b4cf71e4238e58b43283f8f6 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.top-auto','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('top-auto'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal4d33b6e4b4cf71e4238e58b43283f8f6)): ?>
+<?php $attributes = $__attributesOriginal4d33b6e4b4cf71e4238e58b43283f8f6; ?>
+<?php unset($__attributesOriginal4d33b6e4b4cf71e4238e58b43283f8f6); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal4d33b6e4b4cf71e4238e58b43283f8f6)): ?>
+<?php $component = $__componentOriginal4d33b6e4b4cf71e4238e58b43283f8f6; ?>
+<?php unset($__componentOriginal4d33b6e4b4cf71e4238e58b43283f8f6); ?>
+<?php endif; ?>
 
   <div class="container-fluid px-4 py-5 mt-4">
-
-<!-- HEADER (STICKY) -->
-<div class="d-flex justify-content-between align-items-center mb-4 bg-white py-3 px-2 sticky-top shadow-sm" style="z-index: 1030;">
-  <div>
-    <h4 class="fw-bold text-dark mb-1">Automations</h4>
-  </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-outline-secondary">Build from scratch</button>
-    <button class="btn btn-primary">Choose flow template</button>
-  </div>
-</div>
 
 <!-- FILTERING DROPDOWNS (Multi-select with checkboxes + 'All' option) -->
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -983,6 +992,7 @@ document.addEventListener("DOMContentLoaded", function () {
   border-color: #0a58ca !important;
   color: #fff !important;
 }
+
 </style>
 
  <?php echo $__env->renderComponent(); ?>

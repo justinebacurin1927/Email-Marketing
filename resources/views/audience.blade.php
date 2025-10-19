@@ -1,74 +1,47 @@
 <x-layouts.app>
   <x-topbar />
 
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    rel="stylesheet"
+  />
+
   <style>
     .contacts-section {
       margin-top: 80px;
     }
 
-    /* Filter section scrolling */
-    .filter-scroll-container {
-      overflow-x: auto;
-      flex-wrap: nowrap !important;
-      padding-bottom: 5px;
+    /* ===== Scrollbar (Mailchimp-style) ===== */
+    ::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c7c9cc;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a3a6aa;
+    }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #c7c9cc transparent;
     }
 
-    .filter-scroll-container .btn,
-    .filter-scroll-container .form-select {
-      flex-shrink: 0;
-    }
-
-    .filter-scroll-container::-webkit-scrollbar {
-      height: 6px;
-    }
-
-    .filter-scroll-container::-webkit-scrollbar-thumb {
-      background-color: #d1d1d1;
-      border-radius: 6px;
-    }
-
-    .filter-scroll-container::-webkit-scrollbar-track {
-      background-color: transparent;
-    }
-
-    /* Table scroll wrapper */
+    /* ===== Table container with scrollbar ===== */
     .table-scroll {
       overflow-x: auto;
       overflow-y: hidden;
       width: 100%;
-      white-space: nowrap;
-      border-radius: 6px;
-      scroll-behavior: smooth;
+      max-width: 100%;
     }
 
-    /* --- Beautiful, integrated horizontal scrollbar --- */
-    .table-scroll::-webkit-scrollbar {
-      height: 8px;
-    }
-
-    .table-scroll::-webkit-scrollbar-thumb {
-      background-color: #bdbdbd;
-      border-radius: 6px;
-      transition: background-color 0.2s ease;
-    }
-
-    .table-scroll::-webkit-scrollbar-thumb:hover {
-      background-color: #9e9e9e;
-    }
-
-    .table-scroll::-webkit-scrollbar-track {
-      background-color: #f8f9fa;
-      border-radius: 6px;
-    }
-
-    /* Table */
-    .table-scroll table {
-      min-width: 1600px;
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-
-    /* Sticky header */
     .table thead th {
       position: sticky;
       top: 0;
@@ -76,101 +49,294 @@
       z-index: 3;
     }
 
-    /* Sticky columns */
-    .table th:first-child,
-    .table td:first-child {
-      position: sticky;
+    .filter-scroll-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* ===== Dropdown styling ===== */
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-toggle {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
       left: 0;
+      min-width: 220px;
       background: #fff;
-      z-index: 4;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      padding: 8px;
+      z-index: 9999;
     }
 
-    .table th:nth-child(2),
-    .table td:nth-child(2) {
-      position: sticky;
-      left: 50px;
-      background: #fff;
-      z-index: 3;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.03);
+    .dropdown-menu.show {
+      display: block !important;
     }
 
-    /* Subtle separation */
-    .table th {
-      font-weight: 600;
+    .dropdown-menu input[type="search"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 6px;
     }
 
-    .table td {
-      vertical-align: middle;
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 6px;
+      cursor: pointer;
+    }
+
+    .dropdown-item input[type="checkbox"] {
+      margin: 0;
     }
   </style>
 
   <div class="card border-0 shadow-sm mb-5 contacts-section">
-    <div class="card-body">
-
-      <!-- HEADER + FILTERS -->
+    <div class="card-body position-relative">
+      <!-- HEADER -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-bold mb-0">Contacts</h4>
-        <p class="text-muted mb-0">1 total contact. 1 email subscriber.</p>
+        <div class="header-actions d-flex gap-2">
+          <div class="dropdown">
+            <button
+              type="button"
+              class="btn btn-outline-secondary dropdown-toggle"
+              aria-expanded="false"
+            >
+              More options <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="dropdown-menu" role="menu">
+              <a class="dropdown-item" href="#">Audience settings</a>
+              <a class="dropdown-item" href="#">Audience fields and merge tags</a>
+              <a class="dropdown-item" href="#">Unsubscribe emails</a>
+              <a class="dropdown-item" href="#">Groups</a>
+              <a class="dropdown-item" href="#">Audience overview</a>
+              <a class="dropdown-item" href="#">Archive contacts</a>
+              <a class="dropdown-item" href="#">Import history</a>
+              <a class="dropdown-item" href="#">Export history</a>
+            </div>
+          </div>
+
+          <div class="dropdown">
+            <button
+              type="button"
+              class="btn btn-outline-secondary dropdown-toggle"
+              aria-expanded="false"
+            >
+              Add contacts <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="dropdown-menu" role="menu">
+              <a class="dropdown-item" href="#">Import contacts</a>
+              <a class="dropdown-item" href="#">Add a single contact</a>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <!-- FILTERS -->
       <div class="d-flex gap-2 mb-3 align-items-center filter-scroll-container">
-        <select class="form-select w-auto"><option>Segments</option></select>
-        <select class="form-select w-auto"><option>Subscription status</option></select>
-        <select class="form-select w-auto"><option>Tags</option></select>
-        <select class="form-select w-auto"><option>Signup source</option></select>
-        <button class="btn btn-outline-secondary"><i class="bi bi-sliders"></i> Advanced filters</button>
+        <div class="dropdown">
+          <button
+            type="button"
+            class="btn btn-outline-secondary dropdown-toggle"
+            aria-expanded="false"
+          >
+            Segments <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu">
+            <input type="search" placeholder="Search segments..." />
+            <label class="dropdown-item"><input type="checkbox" /> VIP Customers</label>
+            <label class="dropdown-item"><input type="checkbox" /> Newsletter</label>
+            <label class="dropdown-item"><input type="checkbox" /> Recent Buyers</label>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button
+            type="button"
+            class="btn btn-outline-secondary dropdown-toggle"
+            aria-expanded="false"
+          >
+            Subscription status <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu">
+            <label class="dropdown-item"><input type="checkbox" /> Email subscribed</label>
+            <label class="dropdown-item"><input type="checkbox" /> Email unsubscribed</label>
+            <label class="dropdown-item"><input type="checkbox" /> Email non-subscribed</label>
+            <label class="dropdown-item"><input type="checkbox" /> Email cleaned</label>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button
+            type="button"
+            class="btn btn-outline-secondary dropdown-toggle"
+            aria-expanded="false"
+          >
+            Tags <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu">
+            <input type="search" placeholder="Search tags..." />
+            <label class="dropdown-item"><input type="checkbox" /> Premium</label>
+            <label class="dropdown-item"><input type="checkbox" /> Trial</label>
+            <label class="dropdown-item"><input type="checkbox" /> Promo</label>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button
+            type="button"
+            class="btn btn-outline-secondary dropdown-toggle"
+            aria-expanded="false"
+          >
+            Signup source <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu">
+            <input type="search" placeholder="Search source..." />
+            <label class="dropdown-item"><input type="checkbox" /> Website</label>
+            <label class="dropdown-item"><input type="checkbox" /> Shopify</label>
+            <label class="dropdown-item"><input type="checkbox" /> Manual Add</label>
+          </div>
+        </div>
+
+        <button class="btn btn-outline-secondary">
+          <i class="bi bi-sliders"></i> Advanced filters
+        </button>
       </div>
+
+      <p class="text-muted mb-3">1 total contact. 1 email subscriber.</p>
 
       <div class="input-group mb-4" style="max-width: 350px;">
-        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-        <input type="text" class="form-control border-start-0" placeholder="Search contacts">
+        <span class="input-group-text bg-white border-end-0"
+          ><i class="bi bi-search"></i
+        ></span>
+        <input
+          type="text"
+          class="form-control border-start-0"
+          placeholder="Search contacts"
+        />
       </div>
 
-      <!-- SCROLLABLE TABLE -->
+      <!-- TABLE -->
       <div class="table-scroll">
         <table class="table align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th scope="col"><input type="checkbox"></th>
-              <th scope="col">Email Address</th>
-              <th scope="col">First Name</th>
-              <th scope="col">Last Name</th>
-              <th scope="col">Address</th>
-              <th scope="col">Phone Number</th>
-              <th scope="col">Birthday</th>
-              <th scope="col">Company</th>
-              <th scope="col">Tags</th>
-              <th scope="col">Email Marketing</th>
-              <th scope="col">Source</th>
-              <th scope="col">Rating</th>
-              <th scope="col">Date Added</th>
+              <th><input type="checkbox" /></th>
+              <th>Email Address</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Address</th>
+              <th>Phone Number</th>
+              <th>Birthday</th>
+              <th>Company</th>
+              <th>Tags</th>
+              <th>Email Marketing</th>
+              <th>Source</th>
+              <th>Rating</th>
+              <th>Date Added</th>
+              <th>Last Changed</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><input type="checkbox"></td>
-              <td class="text-primary fw-semibold">justinecane.bacuring250811@gmail.com</td>
+              <td><input type="checkbox" /></td>
+              <td class="text-primary fw-semibold">
+                justinecane.bacuring250811@gmail.com
+              </td>
               <td>Justine Cane</td>
               <td>Bacurin</td>
-              <td>Jaycee<br>1151 Torres Bugallon St<br>Barangay 204, Tondo<br>Tondo 1013<br>Philippines</td>
+              <td>
+                Jaycee<br />1151 Torres Bugallon St<br />Barangay 204, Tondo<br />Tondo
+                1013<br />Philippines
+              </td>
               <td>0925235296</td>
               <td>08-19-05</td>
               <td>Gleent Inc.</td>
               <td>-</td>
-              <td><span class="badge bg-success-subtle text-success border">Subscribed</span></td>
+              <td>
+                <span class="badge bg-success-subtle text-success border"
+                  >Subscribed</span
+                >
+              </td>
               <td>Admin Add</td>
               <td>
-                <span class="text-warning">★</span>
-                <span class="text-warning">★</span>
-                <span class="text-secondary">★</span>
+                <span class="text-warning">★</span><span class="text-warning">★</span
+                ><span class="text-secondary">★</span>
               </td>
               <td>10/14</td>
+              <td>3hrs & 4mins</td>
             </tr>
           </tbody>
         </table>
       </div>
-
     </div>
   </div>
+
+  <script>
+    (function () {
+      const closeAll = () => {
+        document.querySelectorAll(".dropdown-menu.show").forEach((menu) => {
+          menu.classList.remove("show");
+          const btn = menu.closest(".dropdown")?.querySelector(".dropdown-toggle");
+          if (btn) btn.setAttribute("aria-expanded", "false");
+        });
+      };
+
+      document.addEventListener("click", (e) => {
+        const toggle = e.target.closest(".dropdown-toggle");
+        if (toggle) {
+          e.preventDefault();
+          e.stopPropagation();
+          const dropdown = toggle.closest(".dropdown");
+          const menu = dropdown.querySelector(".dropdown-menu");
+          const isOpen = menu.classList.contains("show");
+          closeAll();
+          if (!isOpen) {
+            menu.classList.add("show");
+            toggle.setAttribute("aria-expanded", "true");
+          }
+          return;
+        }
+
+        const insideMenu = e.target.closest(".dropdown-menu");
+        if (insideMenu) {
+          if (e.target.tagName === "A") closeAll();
+          return;
+        }
+
+        closeAll();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeAll();
+      });
+
+      document.addEventListener("input", (e) => {
+        const input = e.target;
+        if (!input.matches('.dropdown-menu input[type="search"]')) return;
+        const term = input.value.toLowerCase();
+        input.parentElement.querySelectorAll(".dropdown-item").forEach((item) => {
+          item.style.display = item.textContent.toLowerCase().includes(term)
+            ? ""
+            : "none";
+        });
+      });
+    })();
+  </script>
 </x-layouts.app>

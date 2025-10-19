@@ -15,7 +15,24 @@
       <li><a href="/campaigns" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">📣 <span class="sidebar-text">Campaigns</span></a></li>
       <li><a href="/automation" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">⚙️ <span class="sidebar-text">Automations</span></a></li>
       <li><a href="#" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">🧾 <span class="sidebar-text">Forms</span></a></li>
-      <li><a href="/audience" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">👥 <span class="sidebar-text">Audience</span></a></li>
+
+      <!-- Audience (with collapsible submenu) -->
+      <li class="audience-item">
+        <a href="javascript:void(0)" id="audienceToggle"
+          class="d-flex justify-content-between align-items-center p-2 rounded text-decoration-none text-dark hover-bg-light">
+          <span>👥 <span class="sidebar-text">Audience</span></span>
+          <i class="bi bi-chevron-right small" id="audienceArrow"></i>
+        </a>
+
+        <ul id="audienceSubmenu" class="list-unstyled ms-4 mt-1 collapse-menu">
+          <li><a href="/audience/segments" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">📂 <span class="sidebar-text">Segments</span></a></li>
+          <li><a href="/audience/tags" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">🏷️ <span class="sidebar-text">Tags</span></a></li>
+          <li><a href="/audience/surveys" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">🧩 <span class="sidebar-text">Surveys</span></a></li>
+          <li><a href="/audience/preferences" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">⚙️ <span class="sidebar-text">Preferences</span></a></li>
+          <li><a href="/audience/inbox" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">📥 <span class="sidebar-text">Inbox</span></a></li>
+        </ul>
+      </li>
+
       <li><a href="#" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">📊 <span class="sidebar-text">Analytics</span></a></li>
       <li><a href="#" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">🌐 <span class="sidebar-text">Website</span></a></li>
       <li><a href="#" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light">📝 <span class="sidebar-text">Content</span></a></li>
@@ -35,9 +52,9 @@
   </div>
 </aside>
 
-<!-- Add this wrapper to push your main content right -->
+<!-- MAIN CONTENT WRAPPER -->
 <div style="margin-left: 16rem;">
-  <?php echo $__env->yieldContent('content'); ?> <!-- or your main container -->
+  <?php echo $__env->yieldContent('content'); ?>
 </div>
 
 <style>
@@ -53,9 +70,30 @@
   body {
     overflow-x: hidden;
   }
+
+  /* Submenu hidden by default */
+  .collapse-menu {
+    display: none;
+    transition: all 0.3s ease;
+  }
+
+  .collapse-menu.show {
+    display: block;
+  }
+
+  /* Rotate arrow when expanded */
+  .rotate {
+    transform: rotate(90deg);
+    transition: transform 0.3s ease;
+  }
+
+  .ms-4 {
+    margin-left: 1.5rem !important;
+  }
 </style>
 
 <script>
+  // SIDEBAR COLLAPSE
   const toggleSidebar = document.getElementById('toggleSidebar');
   const sidebar = document.getElementById('sidebar');
   const toggleIcon = document.getElementById('toggleIcon');
@@ -83,5 +121,14 @@
       toggleIcon.style.display = 'inline';
     }
   });
-</script>
-<?php /**PATH /var/www/html/resources/views/layouts/sidebar.blade.php ENDPATH**/ ?>
+
+  // AUDIENCE COLLAPSIBLE MENU
+  const audienceToggle = document.getElementById('audienceToggle');
+  const audienceSubmenu = document.getElementById('audienceSubmenu');
+  const audienceArrow = document.getElementById('audienceArrow');
+
+  audienceToggle.addEventListener('click', () => {
+    audienceSubmenu.classList.toggle('show');
+    audienceArrow.classList.toggle('rotate');
+  });
+</script><?php /**PATH /var/www/html/resources/views/layouts/sidebar.blade.php ENDPATH**/ ?>
