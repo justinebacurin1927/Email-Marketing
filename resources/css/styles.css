@@ -1,0 +1,9 @@
+/* public/css/styles.css */
+.navbar-bg-primary {
+    background-color: #f45c43; /* MailChimp's orange */
+}
+.btn-primary {
+    background-color: #f45c43; /* Customize Bootstrap buttons */
+    border-color: #f45c43;
+}
+/* Add more custom styles as needed */
