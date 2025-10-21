@@ -51,7 +51,7 @@
         <i class="bi bi-arrow-left me-1"></i> Back to messages
       </a>
 
-      <h1 class="header-title">Add essage Templates</h1>
+      <h1 class="header-title">Add Message Templates</h1>
     
 
     <div class="form-box shadow-sm">

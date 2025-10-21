@@ -1,18 +1,14 @@
 <x-layouts.app>
   <x-topbar />
 
-  <!-- Bootstrap Icons -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <style>
     .contacts-section {
       margin-top: 80px;
     }
 
-    /* ===== Scrollbar (Mailchimp-style) ===== */
     ::-webkit-scrollbar {
       height: 8px;
       width: 8px;
@@ -34,7 +30,6 @@
       scrollbar-color: #c7c9cc transparent;
     }
 
-    /* ===== Table container with scrollbar ===== */
     .table-scroll {
       overflow-x: auto;
       overflow-y: hidden;
@@ -55,20 +50,7 @@
       gap: 10px;
     }
 
-    /* ===== Dropdown styling ===== */
-    .dropdown {
-      position: relative;
-    }
-
-    .dropdown-toggle {
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
     .dropdown-menu {
-      display: none;
       position: absolute;
       top: calc(100% + 6px);
       left: 0;
@@ -108,16 +90,11 @@
 
   <div class="card border-0 shadow-sm mb-5 contacts-section">
     <div class="card-body position-relative">
-      <!-- HEADER -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-bold mb-0">Contacts</h4>
         <div class="header-actions d-flex gap-2">
           <div class="dropdown">
-            <button
-              type="button"
-              class="btn btn-outline-secondary dropdown-toggle"
-              aria-expanded="false"
-            >
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
               More options <i class="bi bi-chevron-down"></i>
             </button>
             <div class="dropdown-menu" role="menu">
@@ -133,29 +110,20 @@
           </div>
 
           <div class="dropdown">
-            <button
-              type="button"
-              class="btn btn-outline-secondary dropdown-toggle"
-              aria-expanded="false"
-            >
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
               Add contacts <i class="bi bi-chevron-down"></i>
             </button>
             <div class="dropdown-menu" role="menu">
               <a class="dropdown-item" href="#">Import contacts</a>
-              <a class="dropdown-item" href="#">Add a single contact</a>
+              <a class="dropdown-item" href="/add-contact">Add a single contact</a>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- FILTERS -->
       <div class="d-flex gap-2 mb-3 align-items-center filter-scroll-container">
         <div class="dropdown">
-          <button
-            type="button"
-            class="btn btn-outline-secondary dropdown-toggle"
-            aria-expanded="false"
-          >
+          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             Segments <i class="bi bi-chevron-down"></i>
           </button>
           <div class="dropdown-menu">
@@ -167,11 +135,7 @@
         </div>
 
         <div class="dropdown">
-          <button
-            type="button"
-            class="btn btn-outline-secondary dropdown-toggle"
-            aria-expanded="false"
-          >
+          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             Subscription status <i class="bi bi-chevron-down"></i>
           </button>
           <div class="dropdown-menu">
@@ -183,11 +147,7 @@
         </div>
 
         <div class="dropdown">
-          <button
-            type="button"
-            class="btn btn-outline-secondary dropdown-toggle"
-            aria-expanded="false"
-          >
+          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             Tags <i class="bi bi-chevron-down"></i>
           </button>
           <div class="dropdown-menu">
@@ -199,11 +159,7 @@
         </div>
 
         <div class="dropdown">
-          <button
-            type="button"
-            class="btn btn-outline-secondary dropdown-toggle"
-            aria-expanded="false"
-          >
+          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             Signup source <i class="bi bi-chevron-down"></i>
           </button>
           <div class="dropdown-menu">
@@ -219,76 +175,134 @@
         </button>
       </div>
 
-      <p class="text-muted mb-3">1 total contact. 1 email subscriber.</p>
+      <p class="text-muted mb-3">
+        {{ $contacts->count() }} total contact{{ $contacts->count() !== 1 ? 's' : '' }}.
+        {{ $contacts->count() }} email subscriber{{ $contacts->count() !== 1 ? 's' : '' }}.
+      </p>
 
-      <div class="input-group mb-4" style="max-width: 350px;">
-        <span class="input-group-text bg-white border-end-0"
-          ><i class="bi bi-search"></i
-        ></span>
-        <input
-          type="text"
-          class="form-control border-start-0"
-          placeholder="Search contacts"
-        />
+      <div id="searchBarWrapper" class="input-group mb-4" style="max-width: 350px;">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control border-start-0" placeholder="Search contacts" />
       </div>
 
-      <!-- TABLE -->
+      <div id="deleteBarWrapper" class="d-none mb-4">
+        <form id="deleteSelectedForm" action="{{ route('contacts.deleteSelected') }}" method="POST" onsubmit="return confirm('Delete selected contacts?');">
+          @csrf
+          @method('DELETE')
+          <button id="deleteSelected" type="submit" class="btn d-none" style="border: 1px solid red; background: none; color: red;">
+            <i class="bi bi-trash"></i> Delete Selected
+          </button>
+        </form>
+      </div>
+
       <div class="table-scroll">
-        <table class="table align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th><input type="checkbox" /></th>
-              <th>Email Address</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Address</th>
-              <th>Phone Number</th>
-              <th>Birthday</th>
-              <th>Company</th>
-              <th>Tags</th>
-              <th>Email Marketing</th>
-              <th>Source</th>
-              <th>Rating</th>
-              <th>Date Added</th>
-              <th>Last Changed</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><input type="checkbox" /></td>
-              <td class="text-primary fw-semibold">
-                justinecane.bacuring250811@gmail.com
-              </td>
-              <td>Justine Cane</td>
-              <td>Bacurin</td>
-              <td>
-                Jaycee<br />1151 Torres Bugallon St<br />Barangay 204, Tondo<br />Tondo
-                1013<br />Philippines
-              </td>
-              <td>0925235296</td>
-              <td>08-19-05</td>
-              <td>Gleent Inc.</td>
-              <td>-</td>
-              <td>
-                <span class="badge bg-success-subtle text-success border"
-                  >Subscribed</span
-                >
-              </td>
-              <td>Admin Add</td>
-              <td>
-                <span class="text-warning">★</span><span class="text-warning">★</span
-                ><span class="text-secondary">★</span>
-              </td>
-              <td>10/14</td>
-              <td>3hrs & 4mins</td>
-            </tr>
-          </tbody>
-        </table>
+        <form id="contactsForm">
+          <table class="table align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th><input type="checkbox" id="selectAll"></th>
+                <th>Email Address</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Address</th>
+                <th>Phone Number</th>
+                <th>Birthday</th>
+                <th>Company</th>
+                <th>Tags</th>
+                <th>Email Marketing</th>
+                <th>Source</th>
+                <th>Rating</th>
+                <th>Date Added</th>
+                <th>Last Changed</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse($contacts as $contact)
+              <tr>
+                <td><input type="checkbox" class="contact-checkbox" name="selected_contacts[]" value="{{ $contact->id }}"></td>
+                <td class="text-primary fw-semibold">{{ $contact->email }}</td>
+                <td>{{ $contact->first_name }}</td>
+                <td>{{ $contact->last_name }}</td>
+                <td>
+                  {{ $contact->street }}<br>
+                  {{ $contact->address2 }}<br>
+                  {{ $contact->city }} {{ $contact->region }} {{ $contact->postal }}<br>
+                  {{ $contact->country }}
+                </td>
+                <td>{{ $contact->phone }}</td>
+                <td>{{ $contact->birthday }}</td>
+                <td>{{ $contact->company }}</td>
+                <td>-</td>
+                <td><span class="badge bg-success-subtle text-success border">Subscribed</span></td>
+                <td>Manual Add</td>
+                <td><span class="text-warning">★</span></td>
+                <td>{{ $contact->created_at->format('m/d') }}</td>
+                <td>{{ $contact->updated_at->diffForHumans() }}</td>
+              </tr>
+              @empty
+              <tr>
+                <td colspan="14" class="text-center text-muted">No contacts found.</td>
+              </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </form>
       </div>
     </div>
   </div>
 
-  <script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.contact-checkbox');
+    const searchGroup = document.querySelector('#searchBarWrapper');
+    const deleteBtn = document.getElementById('deleteSelected');
+    const deleteBar = document.getElementById('deleteBarWrapper');
+
+    function updateDeleteButton() {
+      const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+      if (anyChecked) {
+        searchGroup.classList.add('d-none');
+        deleteBar.classList.remove('d-none');
+        deleteBtn.classList.remove('d-none');
+      } else {
+        searchGroup.classList.remove('d-none');
+        deleteBar.classList.add('d-none');
+        deleteBtn.classList.add('d-none');
+      }
+    }
+
+    selectAll.addEventListener('change', function() {
+      checkboxes.forEach(cb => cb.checked = this.checked);
+      updateDeleteButton();
+    });
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        if (!this.checked) selectAll.checked = false;
+        else if (Array.from(checkboxes).every(c => c.checked)) selectAll.checked = true;
+        updateDeleteButton();
+      });
+    });
+
+    // delete submit
+    const deleteForm = document.getElementById('deleteSelectedForm');
+    const contactsForm = document.getElementById('contactsForm');
+
+    deleteForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const confirmed = confirm('Delete selected contacts?');
+      if (!confirmed) return;
+
+      const formData = new FormData(contactsForm);
+      fetch(deleteForm.action, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-HTTP-Method-Override': 'DELETE' },
+        body: formData
+      }).then(() => location.reload());
+    });
+
+    // dropdown logic
     (function () {
       const closeAll = () => {
         document.querySelectorAll(".dropdown-menu.show").forEach((menu) => {
@@ -338,5 +352,6 @@
         });
       });
     })();
-  </script>
+  });
+</script>
 </x-layouts.app>

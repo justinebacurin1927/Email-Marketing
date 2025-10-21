@@ -57,3 +57,14 @@ Route::post('/add-source', [SourceController::class, 'store'])->name('sources.ad
 Route::delete('/delete-source/{id}', [SourceController::class, 'destroy'])->name('sources.delete');
 Route::get('/inbox', [InboxController::class, 'sidebar'])->name('inbox');
 Route::post('/sources/add', [SourceController::class, 'store'])->name('sources.add');
+
+use App\Http\Controllers\ContactController;
+
+Route::get('/audience', [ContactController::class, 'index'])->name('contacts.index');
+Route::get('/add-contact', [ContactController::class, 'create'])->name('contacts.create');
+Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
+Route::delete('/contacts/delete-selected', [ContactController::class, 'deleteSelected'])->name('contacts.deleteSelected');
+
+use App\Http\Controllers\AudienceController;
+
+Route::get('/audience', [AudienceController::class, 'index']);
