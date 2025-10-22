@@ -1,6 +1,5 @@
 <x-layouts.app>
-  <x-topbar />
-  <x-header-home />
+    <x-header-home />
 
   <style>
   /* Buttons hover effect */

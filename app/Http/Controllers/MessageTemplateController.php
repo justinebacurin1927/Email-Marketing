@@ -10,12 +10,12 @@ class MessageTemplateController extends Controller
     public function index()
     {
         $templates = MessageTemplate::all();
-        return view('message-temp', compact('templates'));
+        return view('audience/message-temp', compact('templates'));
     }
 
     public function create()
     {
-        return view('template-form');
+        return view('audience.template-form');
     }
 
     public function store(Request $request)
@@ -36,7 +36,7 @@ class MessageTemplateController extends Controller
     public function edit($id)
 {
     $template = MessageTemplate::findOrFail($id);
-    return view('template-form', compact('template'));
+    return view('audience/template-form', compact('template'));
 }
 
 public function update(Request $request, $id)

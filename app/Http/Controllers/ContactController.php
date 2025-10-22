@@ -8,14 +8,14 @@ class ContactController extends Controller
 {
     public function create()
     {
-        return view('add-contact');
+        return view('audience.add-contact');
     }
 
     public function index()
     {
         $contacts = Contact::latest()->get();
         // show the "audience" view instead of "contacts"
-        return view('audience', compact('contacts'));
+        return view('audience/audience', compact('contacts'));
     }
 
     public function store(Request $request)

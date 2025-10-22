@@ -13,7 +13,7 @@ class SourceController extends Controller
         // Fetch sources with their messages
         $sources = Source::with('messages')->get();
 
-        return view('add-source', compact('sources'));
+        return view('audience.add-source', compact('sources'));
     }
 
     // Store a new source

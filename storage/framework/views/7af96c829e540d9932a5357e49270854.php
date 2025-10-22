@@ -8,27 +8,7 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes([]); ?>
-  <?php if (isset($component)) { $__componentOriginal7f27d4f21ff184c2d29c20efafbd7387 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal7f27d4f21ff184c2d29c20efafbd7387 = $attributes; } ?>
-<?php $component = App\View\Components\Topbar::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('topbar'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\App\View\Components\Topbar::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes([]); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal7f27d4f21ff184c2d29c20efafbd7387)): ?>
-<?php $attributes = $__attributesOriginal7f27d4f21ff184c2d29c20efafbd7387; ?>
-<?php unset($__attributesOriginal7f27d4f21ff184c2d29c20efafbd7387); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal7f27d4f21ff184c2d29c20efafbd7387)): ?>
-<?php $component = $__componentOriginal7f27d4f21ff184c2d29c20efafbd7387; ?>
-<?php unset($__componentOriginal7f27d4f21ff184c2d29c20efafbd7387); ?>
-<?php endif; ?>
-  <?php if (isset($component)) { $__componentOriginal5e647166f667c4cebf02fc514fb4ba23 = $component; } ?>
+    <?php if (isset($component)) { $__componentOriginal5e647166f667c4cebf02fc514fb4ba23 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal5e647166f667c4cebf02fc514fb4ba23 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.header-home','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('header-home'); ?>
