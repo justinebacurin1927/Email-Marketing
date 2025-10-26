@@ -22,7 +22,6 @@
       <!-- Page content -->
 
         {{ $slot }}
-        {{ $slot }}
     </div>
   </div>
 

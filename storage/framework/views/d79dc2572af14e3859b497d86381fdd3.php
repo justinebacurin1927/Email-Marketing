@@ -19,7 +19,12 @@
 </style>
 
 <header class="bg-white border-bottom px-3 py-2"
-  style="position: fixed; top: 0; left: 0; right: 0; z-index: 1100; width: 100%;">
+  style="position: fixed; 
+        top: 0; left: 0; 
+        right: 0; 
+        z-index: 1050; 
+        width: 100%;">
+        
   <div class="d-flex align-items-center justify-content-between">
     <div class="rounded-circle bg-secondary" style="width: 3rem; height: 3rem;"></div>
     <input type="text" placeholder="Search..." class="form-control mx-3"

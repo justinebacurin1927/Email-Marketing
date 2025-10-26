@@ -25,12 +25,12 @@
         </a>
 
         <ul id="audienceSubmenu" class="list-unstyled ms-4 mt-1 collapse-menu">
-          <li><a href="audience/dashboard" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Dashboard</span></a></li>          
-          <li><a href="audience" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Contacts</span></a></li>
-          <li><a href="audience/audience-tags" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Tags</span></a></li>
-          <li><a href="audience/audience-segments" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Segments</span></a></li>          
-          <li><a href="audience/surveys" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Surveys</span></a></li>
-          <li><a href="audience/preferences" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Preferences</span></a></li>
+          <li><a href="/audience/dashboards" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Dashboard</span></a></li>          
+          <li><a href="/audience" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Contacts</span></a></li>
+          <li><a href="/audience/audience-tags" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Tags</span></a></li>
+          <li><a href="/audience/audience-segments" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Segments</span></a></li>          
+          <li><a href="/audience/surveys" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Surveys</span></a></li>
+          <li><a href="/audience/preferences" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Preferences</span></a></li>
           <li><a href="/audience/inbox" class="d-block p-2 rounded text-decoration-none text-dark hover-bg-light"><span class="sidebar-text">Inbox</span></a></li>
         </ul>
       </li>

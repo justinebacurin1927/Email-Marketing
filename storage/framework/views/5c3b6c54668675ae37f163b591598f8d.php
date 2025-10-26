@@ -23,8 +23,6 @@
 
         <?php echo e($slot); ?>
 
-        <?php echo e($slot); ?>
-
     </div>
   </div>
 

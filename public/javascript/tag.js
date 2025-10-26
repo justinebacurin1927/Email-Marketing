@@ -3,9 +3,7 @@
       let currentTagId = null;
       
       // ========== EVENT DELEGATION FOR DROPDOWN ACTIONS ==========
-      // This handles clicks on rename and delete links in dropdowns
       document.addEventListener('click', function(e) {
-        // Handle rename tag clicks
         if (e.target.classList.contains('rename-tag') || e.target.closest('.rename-tag')) {
           e.preventDefault();
           const renameLink = e.target.classList.contains('rename-tag') ? e.target : e.target.closest('.rename-tag');
@@ -18,7 +16,6 @@
           renameModal.show();
         }
         
-        // Handle delete tag clicks
         if (e.target.classList.contains('delete-tag') || e.target.closest('.delete-tag')) {
           e.preventDefault();
           const deleteLink = e.target.classList.contains('delete-tag') ? e.target : e.target.closest('.delete-tag');
@@ -34,8 +31,8 @@
 
       // ========== SORTING STATE ==========
       let sortState = {
-        field: 'name', // 'name' or 'date'
-        direction: 'asc' // 'asc' or 'desc'
+        field: 'name',
+        direction: 'asc'
       };
 
       // ========== SORTING FUNCTIONALITY ==========
@@ -43,16 +40,13 @@
       const sortDirectionBtn = document.getElementById('sortDirectionBtn');
       const sortArrow = sortDirectionBtn.querySelector('.sort-arrow');
 
-      // Initialize sort direction
       updateSortDirection();
 
-      // Sort when field changes
       sortSelect.addEventListener('change', function() {
         sortState.field = this.value;
         sortTags();
       });
 
-      // Toggle sort direction when arrow button is clicked
       sortDirectionBtn.addEventListener('click', function() {
         sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
         updateSortDirection();
@@ -68,7 +62,6 @@
           sortDirectionBtn.title = 'Sort descending (click to switch to ascending)';
         }
         
-        // Visual feedback
         sortDirectionBtn.classList.add('active');
         setTimeout(() => {
           sortDirectionBtn.classList.remove('active');
@@ -95,7 +88,6 @@
           });
         }
         
-        // Re-append rows in sorted order
         rows.forEach(r => tbody.appendChild(r));
       }
 
@@ -103,13 +95,18 @@
       const createBtn = document.getElementById('createTagBtn');
       const tagInput = document.getElementById('tagName');
       const tagAlert = document.getElementById('tagAlert');
-      const modalEl = document.getElementById('createTagModal');
+      const createModalEl = document.getElementById('createTagModal');
+      let createModalInstance = null;
 
-      modalEl.addEventListener('show.bs.modal', () => {
+      createModalEl.addEventListener('show.bs.modal', () => {
         tagAlert.classList.add('d-none');
         tagAlert.textContent = '';
         tagAlert.classList.remove('alert-success','alert-danger');
         tagInput.value = '';
+      });
+
+      createModalEl.addEventListener('shown.bs.modal', () => {
+        tagInput.focus();
       });
 
       createBtn.addEventListener('click', async () => {
@@ -137,12 +134,16 @@
             tagAlert.classList.add('alert-success');
             tagAlert.textContent = data.message;
             
-            // Add new tag to the table
             addTagToTable(data.tag);
             
             setTimeout(() => {
-              const modal = bootstrap.Modal.getInstance(modalEl);
+              const modal = bootstrap.Modal.getInstance(createModalEl);
               modal.hide();
+              // Clear the form after modal is hidden
+              setTimeout(() => {
+                tagInput.value = '';
+                tagAlert.classList.add('d-none');
+              }, 300);
             }, 1000);
           } else {
             throw new Error(data.message || 'Failed to create tag');
@@ -167,6 +168,11 @@
         renameTagAlert.classList.add('d-none');
         renameTagAlert.textContent = '';
         renameTagAlert.classList.remove('alert-success', 'alert-danger');
+      });
+
+      renameModalEl.addEventListener('shown.bs.modal', () => {
+        renameTagInput.focus();
+        renameTagInput.select();
       });
 
       renameTagBtn.addEventListener('click', async () => {
@@ -195,7 +201,6 @@
             renameTagAlert.classList.add('alert-success');
             renameTagAlert.textContent = data.message;
             
-            // Update the tag in table
             updateTagInTable(currentTagId, newTagName);
             
             setTimeout(() => {
@@ -247,7 +252,6 @@
             deleteTagAlert.classList.add('alert-success');
             deleteTagAlert.textContent = data.message;
             
-            // Remove tag from table
             removeTagFromTable(currentTagId);
             
             setTimeout(() => {
@@ -306,7 +310,6 @@
           const data = await response.json();
 
           if (data.success) {
-            // Remove all selected tags from table
             tagIds.forEach(tagId => removeTagFromTable(tagId));
             selectAllCheckbox.checked = false;
             alert(data.message);
@@ -360,8 +363,6 @@
         `;
 
         tbody.appendChild(newRow);
-        
-        // Re-sort after adding new tag
         sortTags();
       }
 
@@ -376,8 +377,6 @@
           renameLink.setAttribute('data-tag-name', newName);
           deleteLink.setAttribute('data-tag-name', newName);
         }
-        
-        // Re-sort after renaming tag
         sortTags();
       }
 
@@ -404,3 +403,11 @@
         });
       });
     });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const testDropdown = document.querySelector('[data-bs-toggle="dropdown"]');
+    if (testDropdown) {
+      console.log('Bootstrap dropdown initialized:', typeof bootstrap !== 'undefined');
+    }
+  });
+

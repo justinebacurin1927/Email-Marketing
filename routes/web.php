@@ -7,6 +7,10 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\SourceController;
 use App\Http\Controllers\MessageTemplateController;
+use App\Http\Controllers\LabelController;
+use App\Http\Controllers\AudienceDashboardController;
+
+
 
 // DATABASE TEST
 Route::get('/db-test', fn() => DB::select('SHOW TABLES'));
@@ -27,6 +31,10 @@ Route::delete('/template-form/{id}', [MessageTemplateController::class, 'destroy
 //TEMPLATE ADDING 
 Route::get('/audience/template-form', [MessageTemplateController::class, 'create'])->name('templates.create');
 
+// AUDIENCE - DASHBOARDS
+Route::get('/audience/dashboards', [AudienceDashboardController::class, 'dashboards'])->name('audience.dashboards');
+
+
 // AUDIENCE - CONTACTS
 Route::get('/audience', [ContactController::class, 'index'])->name('contacts.index');
 Route::get('/add-contact', [ContactController::class, 'create'])->name('contacts.create');
@@ -34,8 +42,14 @@ Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.st
 Route::delete('/contacts/delete-selected', [ContactController::class, 'deleteSelected'])->name('contacts.deleteSelected');
 
 // AUDIENCE - INBOX
+
 Route::get('/audience/inbox', [InboxController::class, 'index'])->name('inbox');
 Route::get('/inbox-settings', [InboxController::class, 'settings'])->name('inbox.settings');
+
+// AUDIENCE - LABELS
+Route::get('audience/add-labels', [LabelController::class, 'index'])->name('labels.index');       // show the labels page
+Route::post('audience/add-labels', [LabelController::class, 'store'])->name('labels.add');         // add a new label
+Route::delete('audience/delete-label/{id}', [LabelController::class, 'destroy'])->name('labels.delete'); // delete a label
 
 // AUDIENCE - SOURCES
 Route::get('/add-source', [SourceController::class, 'index'])->name('sources.index');
@@ -51,3 +65,4 @@ Route::post('/tags/bulk-delete', [TagController::class, 'bulkDestroy'])->name('t
 
 // OPTIONAL AUDIENCE CONTROLLER DASHBOARD
 Route::get('/audience-dashboard', [AudienceController::class, 'index'])->name('audience.dashboard');
+

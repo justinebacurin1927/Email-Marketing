@@ -56,14 +56,32 @@
   </ul>
 </div>
 
-  <!-- LABELS -->
-  <div class="p-3 border-bottom">
+
+<!-- LABELS -->
+<div class="p-3 border-bottom">
     <div class="d-flex justify-content-between align-items-center mb-2">
-      <strong>Labels</strong>
-      <a href="#" class="small text-decoration-none text-primary">Manage</a>
+        <strong>Labels</strong>
+        <a href="{{ route('labels.index') }}" class="small text-decoration-none text-primary">Manage</a>
     </div>
-    <p class="text-secondary small mb-0">No labels</p>
-  </div>
+
+    <ul class="list-unstyled mb-0">
+        @php
+            $sidebarLabels = \App\Models\Label::all();
+        @endphp
+
+        @if($sidebarLabels->isEmpty())
+            <p class="text-secondary small mb-0">No labels</p>
+        @else
+            @foreach($sidebarLabels as $label)
+                <li>
+                    <a href="{{ url('audience/inbox?label='.$label->id) }}" class="d-block py-1 text-dark text-decoration-none">
+                        {{ $label->name }}
+                    </a>
+                </li>
+            @endforeach
+        @endif
+    </ul>
+</div>
 
   <!-- SETTINGS LINKS -->
   <div class="p-3 flex-grow-1">

@@ -12,8 +12,11 @@ class InboxController extends Controller
     }
 
     public function settings()
-    {
+    {   
         return view('audience.inbox-settings');
     }
 
+    
+
 }
+
