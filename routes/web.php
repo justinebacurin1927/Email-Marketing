@@ -40,6 +40,16 @@ Route::get('/audience', [ContactController::class, 'index'])->name('contacts.ind
 Route::get('/add-contact', [ContactController::class, 'create'])->name('contacts.create');
 Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
 Route::delete('/contacts/delete-selected', [ContactController::class, 'deleteSelected'])->name('contacts.deleteSelected');
+Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contacts.update');
+
+Route::get('/import-contacts', [ContactController::class, 'showImportForm'])->name('contacts.import.form');
+Route::post('/import-contacts', [ContactController::class, 'import'])->name('contacts.import');
+
+Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
+
+Route::get('/contacts/export', [ContactController::class, 'export'])->name('contacts.export');
+
+
 
 // AUDIENCE - INBOX
 

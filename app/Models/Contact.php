@@ -24,4 +24,11 @@ class Contact extends Model
         'postal',
         'country',
     ];
+
+public function tags()
+{
+    return $this->belongsToMany(Tag::class, 'contact_tag', 'contact_id', 'tag_id');
 }
+
+}
+

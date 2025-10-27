@@ -1,5 +1,4 @@
 <?php
-// app/Models/Tag.php
 
 namespace App\Models;
 
@@ -11,4 +10,10 @@ class Tag extends Model
     use HasFactory;
 
     protected $fillable = ['name'];
+
+    public function contacts()
+{
+    return $this->belongsToMany(Contact::class, 'contact_tag', 'tag_id', 'contact_id');
+}
+
 }

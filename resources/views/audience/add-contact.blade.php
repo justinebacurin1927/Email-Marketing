@@ -1,4 +1,4 @@
-<x-layouts.bp-inbox>
+<x-layouts.app>
   <x-topbar/>
 
   <title>Add Contact</title>
@@ -9,11 +9,12 @@
     body {
       background-color: #f6f7f8;
     }
-    .main-content {
-      margin-left: 20rem;
-      padding: 2rem;
-      margin-top: 4.2rem;
-    }
+.main-content {
+  margin-left: 5rem;
+  padding: 2rem;
+  margin-top: 4.2rem;
+}
+
     .form-box {
       background: white;
       border: 1px solid #e0e0e0;
@@ -76,8 +77,6 @@
 
   <form action="{{ route('contacts.store') }}" method="POST">
     @csrf
-    <!-- your existing form fields below -->
-
 
         <div class="mb-3">
           <label class="form-label">Email Address <span class="text-danger">*</span></label>
@@ -103,6 +102,16 @@
         <div class="mb-3">
           <label class="form-label">Company</label>
           <input type="text" name="company" class="form-control" placeholder="Enter company name" value="{{ old('company') }}">
+        </div>
+
+        <!-- TAG CREATION -->
+        <div class="mb-3">
+          <label class="form-label">Tags</label>
+          <div class="input-group">
+            <input type="text" name="tags" class="form-control" placeholder="Enter new tag or multiple tags separated by commas">
+            <button type="button" id="addTagBtn" class="btn btn-outline-teal" style="background-color: teal; color: white;">Add Tag</button>
+          </div>
+          <small class="text-muted">Separate multiple tags with commas.</small>
         </div>
 
         <div class="row">
@@ -165,4 +174,10 @@
       </form>
     </div>
   </div>
+
+  <script>
+    document.getElementById('addTagBtn').addEventListener('click', function() {
+      alert('Tag added. This should trigger a backend call to save the tag.');
+    });
+  </script>
 </x-layouts.bp-inbox>

@@ -1,30 +1,44 @@
 <x-layouts.app>
   <div class="px-4 py-4 mt-5">
+<!-- PAGE HEADER -->
+<header class="mb-4 mt-4 d-flex justify-content-between align-items-center">
+  <h2 class="fw-bold fs-2 mb-0">
+    <a href="#" class="text-dark text-decoration-none"
+       tabindex="0"
+       data-bs-toggle="popover"
+       data-bs-trigger="focus"
+       title="About Audience"
+       data-bs-content="All the contacts you pay to store in Mailchimp. These chargeable contacts (subscribed, non-subscribed, and unsubscribed) are eligible to receive at least one type of marketing from you. We also refer to the container where all your chargeable contacts are stored as your audience. This is where you can manage and see all your contact data with the help of our CRM tools.">
+      Audience
+    </a>
+  </h2>
+</header>
 
-    <!-- PAGE HEADER -->
-    <header class="mb-4">
-      <h1 class="fw-bold fs-3 text-dark mb-1">Audience</h1>
-      <p class="text-secondary mb-0">
-        <strong>Jaycee</strong><br>
-        <span class="text-primary fw-semibold">2</span> total contacts. 
-        <span class="text-primary fw-semibold">2</span> email subscribers.
-      </p>
-    </header>
+<!-- AUDIENCE INFO AND BUTTONS -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <p class="text-secondary fs-5 mb-0">
+      <strong>Jaycee</strong><br>
+      <span class="text-primary fw-semibold fs-4">2</span> total contacts.
+      <span class="text-primary fw-semibold fs-4">2</span> email subscribers.
+    </p>
+  </div>
 
-    <!-- ACTION BUTTONS -->
-    <div class="d-flex gap-2 mb-4">
-      <button class="btn btn-outline-secondary btn-sm">View Contacts</button>
-      <div class="dropdown">
-        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-          Manage Audience
-        </button>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#">Import Contacts</a></li>
-          <li><a class="dropdown-item" href="#">Export Contacts</a></li>
-          <li><a class="dropdown-item" href="#">Delete Audience</a></li>
-        </ul>
-      </div>
+  <div class="d-flex gap-3">
+    <button class="btn btn-outline-secondary px-4 py-2">View Contacts</button>
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary px-4 py-2 dropdown-toggle" data-bs-toggle="dropdown">
+        Manage Audience
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#">Import Contacts</a></li>
+        <li><a class="dropdown-item" href="#">Export Contacts</a></li>
+        <li><a class="dropdown-item" href="#">Delete Audience</a></li>
+      </ul>
     </div>
+  </div>
+</div>
+
 
     <!-- DASHBOARD CARDS -->
     <div class="row g-4">
@@ -83,4 +97,32 @@
       </div>
     </div>
   </div>
+
+  <!-- POPPER + BOOTSTRAP JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+
+  <!-- POPOVER INIT -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+      popoverTriggerList.forEach(function (popoverTriggerEl) {
+        new bootstrap.Popover(popoverTriggerEl)
+      })
+    })
+  </script>
+
+  <!-- POPPER + BOOTSTRAP JS -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+
+<!-- POPOVER INIT -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+    popoverTriggerList.forEach(function (popoverTriggerEl) {
+      new bootstrap.Popover(popoverTriggerEl)
+    })
+  })
+</script>
 </x-layouts.app>

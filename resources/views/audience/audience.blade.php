@@ -114,7 +114,7 @@
               Add contacts <i class="bi bi-chevron-down"></i>
             </button>
             <div class="dropdown-menu" role="menu">
-              <a class="dropdown-item" href="#">Import contacts</a>
+              <a class="dropdown-item" href="/import-contacts">Import contacts</a>
               <a class="dropdown-item" href="/add-contact">Add a single contact</a>
             </div>
           </div>
@@ -146,17 +146,28 @@
           </div>
         </div>
 
-        <div class="dropdown">
-          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Tags <i class="bi bi-chevron-down"></i>
-          </button>
-          <div class="dropdown-menu">
-            <input type="search" placeholder="Search tags..." />
-            <label class="dropdown-item"><input type="checkbox" /> Premium</label>
-            <label class="dropdown-item"><input type="checkbox" /> Trial</label>
-            <label class="dropdown-item"><input type="checkbox" /> Promo</label>
-          </div>
-        </div>
+<div class="dropdown">
+  <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    Tags <i class="bi bi-chevron-down"></i>
+  </button>
+  <div class="dropdown-menu">
+    <input type="search" placeholder="Search tags..." class="tag-search" />
+
+    @foreach($tags as $tag)
+      <label class="dropdown-item">
+        <input type="checkbox" class="tag-checkbox" data-tag="{{ $tag->name }}" />
+        {{ $tag->name }}
+      </label>
+    @endforeach
+
+    <hr class="my-2">
+    <div class="text-center">
+      <a href="{{ url('/audience/audience-tags') }}" class="btn btn-sm btn-outline-primary w-100">
+        <i>Manage all tags</i>
+      </a>
+    </div>
+  </div>
+</div>
 
         <div class="dropdown">
           <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -175,26 +186,45 @@
         </button>
       </div>
 
-      <p class="text-muted mb-3">
-        {{ $contacts->count() }} total contact{{ $contacts->count() !== 1 ? 's' : '' }}.
-        {{ $contacts->count() }} email subscriber{{ $contacts->count() !== 1 ? 's' : '' }}.
-      </p>
+                        @if (session('success'))
+  <div class="alert alert-success alert-dismissible fade show mt-4 mx-4" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+@endif
 
-      <div id="searchBarWrapper" class="input-group mb-4" style="max-width: 350px;">
-        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-        <input type="text" class="form-control border-start-0" placeholder="Search contacts" />
-      </div>
+<p class="text-muted mb-3">
+  {{ $contacts->total() }} total contact{{ $contacts->total() !== 1 ? 's' : '' }}.
+  {{ $contacts->total() }} email subscriber{{ $contacts->total() !== 1 ? 's' : '' }}.
+</p>
 
-      <div id="deleteBarWrapper" class="d-none mb-4">
-        <form id="deleteSelectedForm" action="{{ route('contacts.deleteSelected') }}" method="POST" onsubmit="return confirm('Delete selected contacts?');">
-          @csrf
-          @method('DELETE')
-          <button id="deleteSelected" type="submit" class="btn d-none" style="border: 1px solid red; background: none; color: red;">
-            <i class="bi bi-trash"></i> Delete Selected
-          </button>
-        </form>
-      </div>
 
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div id="searchBarWrapper" class="input-group" style="max-width: 350px;">
+    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+    <input type="text" class="form-control border-start-0" placeholder="Search contacts" />
+  </div>
+
+  <a href="{{ route('contacts.export') }}" class="btn" style="background-color: teal; color: white;">
+    Export CSV
+  </a>
+</div>
+
+
+<div id="deleteBarWrapper" class="d-none mb-4 d-flex gap-2">
+  <form id="deleteSelectedForm" action="{{ route('contacts.deleteSelected') }}" method="POST" onsubmit="return confirm('Delete selected contacts?');">
+    @csrf
+    @method('DELETE')
+    <button id="deleteSelected" type="submit" class="btn btn-outline-danger d-none">
+      <i class="bi bi-trash"></i> Delete Selected
+    </button>
+  </form>
+
+  <button id="editSelected" type="button" class="btn btn-outline-primary d-none" data-bs-toggle="modal" data-bs-target="#editContactModal">
+    <i class="bi bi-pencil"></i> Edit Selected
+  </button>
+</div>
       <div class="table-scroll">
         <form id="contactsForm">
           <table class="table align-middle mb-0">
@@ -216,142 +246,331 @@
                 <th>Last Changed</th>
               </tr>
             </thead>
-            <tbody>
-              @forelse($contacts as $contact)
-              <tr>
-                <td><input type="checkbox" class="contact-checkbox" name="selected_contacts[]" value="{{ $contact->id }}"></td>
-                <td class="text-primary fw-semibold">{{ $contact->email }}</td>
-                <td>{{ $contact->first_name }}</td>
-                <td>{{ $contact->last_name }}</td>
-                <td>
-                  {{ $contact->street }}<br>
-                  {{ $contact->address2 }}<br>
-                  {{ $contact->city }} {{ $contact->region }} {{ $contact->postal }}<br>
-                  {{ $contact->country }}
-                </td>
-                <td>{{ $contact->phone }}</td>
-                <td>{{ $contact->birthday }}</td>
-                <td>{{ $contact->company }}</td>
-                <td>-</td>
-                <td><span class="badge bg-success-subtle text-success border">Subscribed</span></td>
-                <td>Manual Add</td>
-                <td><span class="text-warning">★</span></td>
-                <td>{{ $contact->created_at->format('m/d') }}</td>
-                <td>{{ $contact->updated_at->diffForHumans() }}</td>
-              </tr>
-              @empty
-              <tr>
-                <td colspan="14" class="text-center text-muted">No contacts found.</td>
-              </tr>
-              @endforelse
-            </tbody>
+<tbody>
+  @forelse($contacts as $contact)
+  <tr>
+    <td><input type="checkbox" class="contact-checkbox" name="selected_contacts[]" value="{{ $contact->id }}"></td>
+    <td class="text-primary fw-semibold">{{ $contact->email }}</td>
+    <td>{{ $contact->first_name }}</td>
+    <td>{{ $contact->last_name }}</td>
+    <td>
+      {{ $contact->street }}<br>
+      {{ $contact->address2 }}<br>
+      {{ $contact->city }} {{ $contact->region }} {{ $contact->postal }}<br>
+      {{ $contact->country }}
+    </td>
+    <td>{{ $contact->phone }}</td>
+    <td>{{ $contact->birthday }}</td>
+    <td>{{ $contact->company }}</td>
+    <td>
+        @forelse($contact->tags as $tag)
+            <span class="badge bg-primary me-1">{{ $tag->name }}</span>
+        @empty
+            -
+        @endforelse
+    </td>
+    <td><span class="badge bg-success-subtle text-success border">Subscribed</span></td>
+    <td>Manual Add</td>
+    <td><span class="text-warning">★</span></td>
+    <td>{{ $contact->created_at->format('m/d') }}</td>
+    <td>{{ $contact->updated_at->diffForHumans() }}</td>
+  </tr>
+  @empty
+  <tr>
+    <td colspan="14" class="text-center text-muted">No contacts found.</td>
+  </tr>
+  @endforelse
+</tbody>
+
           </table>
+<div class="card-footer bg-white border-0">
+  <div class="d-flex justify-content-center">
+    {{ $contacts->links('pagination::bootstrap-5') }}
+  </div>
+</div>
+
+
         </form>
       </div>
     </div>
   </div>
 
+<div class="modal fade" id="editContactModal" tabindex="-1" aria-labelledby="editContactModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="editContactForm">
+        @csrf
+        <div class="modal-header">
+          <h5 class="modal-title" id="editContactModalLabel">Edit Contact</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="contact_id" id="editContactId">
+
+          <div class="mb-3">
+            <label for="editEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="editEmail" name="email" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="editFirstName" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="editFirstName" name="first_name">
+          </div>
+
+          <div class="mb-3">
+            <label for="editLastName" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="editLastName" name="last_name">
+          </div>
+
+          <div class="mb-3">
+            <label for="editPhone" class="form-label">Phone</label>
+            <input type="text" class="form-control" id="editPhone" name="phone">
+          </div>
+
+          <div class="mb-3">
+            <label for="editAddress" class="form-label">Address</label>
+            <textarea class="form-control" id="editAddress" name="address"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="editCompany" class="form-label">Company</label>
+            <input type="text" class="form-control" id="editCompany" name="company">
+          </div>
+
+          <div class="mb-3">
+            <label for="editBirthday" class="form-label">Birthday</label>
+            <input type="date" class="form-control" id="editBirthday" name="birthday">
+          </div>
+
+          <div class="mb-3">
+            <label for="editTags" class="form-label">Tags (comma separated)</label>
+            <input type="text" class="form-control" id="editTags" name="tags">
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  @if (session('success'))
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.contact-checkbox');
-    const searchGroup = document.querySelector('#searchBarWrapper');
-    const deleteBtn = document.getElementById('deleteSelected');
-    const deleteBar = document.getElementById('deleteBarWrapper');
-
-    function updateDeleteButton() {
-      const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-      if (anyChecked) {
-        searchGroup.classList.add('d-none');
-        deleteBar.classList.remove('d-none');
-        deleteBtn.classList.remove('d-none');
-      } else {
-        searchGroup.classList.remove('d-none');
-        deleteBar.classList.add('d-none');
-        deleteBtn.classList.add('d-none');
-      }
-    }
-
-    selectAll.addEventListener('change', function() {
-      checkboxes.forEach(cb => cb.checked = this.checked);
-      updateDeleteButton();
-    });
-
-    checkboxes.forEach(cb => {
-      cb.addEventListener('change', function() {
-        if (!this.checked) selectAll.checked = false;
-        else if (Array.from(checkboxes).every(c => c.checked)) selectAll.checked = true;
-        updateDeleteButton();
-      });
-    });
-
-    // delete submit
-    const deleteForm = document.getElementById('deleteSelectedForm');
-    const contactsForm = document.getElementById('contactsForm');
-
-    deleteForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const confirmed = confirm('Delete selected contacts?');
-      if (!confirmed) return;
-
-      const formData = new FormData(contactsForm);
-      fetch(deleteForm.action, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-HTTP-Method-Override': 'DELETE' },
-        body: formData
-      }).then(() => location.reload());
-    });
-
-    // dropdown logic
-    (function () {
-      const closeAll = () => {
-        document.querySelectorAll(".dropdown-menu.show").forEach((menu) => {
-          menu.classList.remove("show");
-          const btn = menu.closest(".dropdown")?.querySelector(".dropdown-toggle");
-          if (btn) btn.setAttribute("aria-expanded", "false");
-        });
-      };
-
-      document.addEventListener("click", (e) => {
-        const toggle = e.target.closest(".dropdown-toggle");
-        if (toggle) {
-          e.preventDefault();
-          e.stopPropagation();
-          const dropdown = toggle.closest(".dropdown");
-          const menu = dropdown.querySelector(".dropdown-menu");
-          const isOpen = menu.classList.contains("show");
-          closeAll();
-          if (!isOpen) {
-            menu.classList.add("show");
-            toggle.setAttribute("aria-expanded", "true");
-          }
-          return;
-        }
-
-        const insideMenu = e.target.closest(".dropdown-menu");
-        if (insideMenu) {
-          if (e.target.tagName === "A") closeAll();
-          return;
-        }
-
-        closeAll();
-      });
-
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeAll();
-      });
-
-      document.addEventListener("input", (e) => {
-        const input = e.target;
-        if (!input.matches('.dropdown-menu input[type="search"]')) return;
-        const term = input.value.toLowerCase();
-        input.parentElement.querySelectorAll(".dropdown-item").forEach((item) => {
-          item.style.display = item.textContent.toLowerCase().includes(term)
-            ? ""
-            : "none";
-        });
-      });
-    })();
+  document.addEventListener('DOMContentLoaded', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+</script>
+@endif
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // --------------------------
+  // DOM elements
+  // --------------------------
+  const selectAll = document.getElementById('selectAll');
+  const searchGroup = document.getElementById('searchBarWrapper');
+  const deleteBar = document.getElementById('deleteBarWrapper');
+  const deleteBtn = document.getElementById('deleteSelected');
+  const editBtn = document.getElementById('editSelected');
+  const contactsForm = document.getElementById('contactsForm');
+  const deleteForm = document.getElementById('deleteSelectedForm');
+  const searchInput = document.querySelector('#searchBarWrapper input');
+  const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+  const tagSearchInput = document.querySelector('.tag-search');
+  const tableRows = document.querySelectorAll('#contactsForm table tbody tr');
+
+  // --------------------------
+  // Utility: update buttons
+  // --------------------------
+  function updateButtons() {
+  const checkboxes = document.querySelectorAll('.contact-checkbox');
+  const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+  const anyChecked = checkedBoxes.length > 0;
+
+  const exportBtn = document.querySelector('a[href="{{ route('contacts.export') }}"]');
+
+  if (anyChecked) {
+    searchGroup.classList.add('d-none');
+    deleteBar.classList.remove('d-none');
+    deleteBtn.classList.remove('d-none');
+    editBtn.classList.toggle('d-none', checkedBoxes.length !== 1);
+    if (exportBtn) exportBtn.classList.add('d-none');
+  } else {
+    searchGroup.classList.remove('d-none');
+    deleteBar.classList.add('d-none');
+    deleteBtn.classList.add('d-none');
+    editBtn.classList.add('d-none');
+    if (exportBtn) exportBtn.classList.remove('d-none');
+  }
+}
+
+
+  // --------------------------
+  // Select all checkbox
+  // --------------------------
+  selectAll.addEventListener('change', function() {
+    document.querySelectorAll('.contact-checkbox').forEach(cb => cb.checked = this.checked);
+    updateButtons();
+  });
+
+  // --------------------------
+  // Individual contact checkboxes
+  // --------------------------
+  document.addEventListener('change', function(e) {
+    if (e.target.matches('.contact-checkbox')) {
+      const allCheckboxes = document.querySelectorAll('.contact-checkbox');
+      selectAll.checked = Array.from(allCheckboxes).every(cb => cb.checked);
+      updateButtons();
+    }
+  });
+
+  // --------------------------
+  // Delete selected contacts
+  // --------------------------
+  deleteForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!confirm('Delete selected contacts?')) return;
+
+    const formData = new FormData(contactsForm);
+    fetch(deleteForm.action, {
+      method: 'POST',
+      headers: { 
+        'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+        'X-HTTP-Method-Override': 'DELETE' 
+      },
+      body: formData
+    }).then(() => location.reload());
+  });
+
+  // --------------------------
+  // Edit selected contact (modal)
+  // --------------------------
+  editBtn.addEventListener('click', function() {
+  const checkedBox = document.querySelector('.contact-checkbox:checked');
+  if (!checkedBox) return;
+
+  const row = checkedBox.closest('tr');
+  const contactId = checkedBox.value;
+
+  // Populate modal fields
+  document.getElementById('editContactId').value = contactId;
+  document.getElementById('editEmail').value = row.children[1].textContent.trim();
+  document.getElementById('editFirstName').value = row.children[2].textContent.trim();
+  document.getElementById('editLastName').value = row.children[3].textContent.trim();
+  document.getElementById('editAddress').value = row.children[4].textContent.trim();
+  document.getElementById('editPhone').value = row.children[5].textContent.trim();
+  document.getElementById('editBirthday').value = row.children[6].textContent.trim();
+  document.getElementById('editCompany').value = row.children[7].textContent.trim();
+
+  // Tags
+  const tags = Array.from(row.querySelectorAll('td:nth-child(9) .badge'))
+                .map(b => b.textContent.trim())
+                .join(', ');
+  document.getElementById('editTags').value = tags;
+
+  const modal = new bootstrap.Modal(document.getElementById('editContactModal'));
+  modal.show();
+});
+
+document.getElementById('editContactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+
+  fetch(`/contacts/${formData.get('contact_id')}`, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': '{{ csrf_token() }}',
+      'X-HTTP-Method-Override': 'PUT'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(() => {
+    const modalEl = document.getElementById('editContactModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    modalInstance.hide(); // close modal properly
+    location.reload();    // reload to reflect changes
+  });
+});
+
+
+  // --------------------------
+  // Contact search input
+  // --------------------------
+  searchInput.addEventListener('input', function() {
+    const term = this.value.toLowerCase();
+    tableRows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(term) ? '' : 'none';
+    });
+  });
+
+  // --------------------------
+  // Filter by tags
+  // --------------------------
+  function filterByTags() {
+    const selectedTags = Array.from(document.querySelectorAll('.tag-checkbox:checked'))
+      .map(cb => cb.dataset.tag.toLowerCase());
+
+    tableRows.forEach(row => {
+      const rowTags = Array.from(row.querySelectorAll('td:nth-child(9) .badge'))
+        .map(b => b.textContent.toLowerCase());
+      row.style.display = (selectedTags.length === 0 || selectedTags.some(tag => rowTags.includes(tag))) ? '' : 'none';
+    });
+  }
+
+  tagCheckboxes.forEach(cb => cb.addEventListener('change', filterByTags));
+
+  tagSearchInput.addEventListener('input', function() {
+    const term = this.value.toLowerCase();
+    tagCheckboxes.forEach(cb => {
+      const itemText = cb.dataset.tag.toLowerCase();
+      cb.closest('.dropdown-item').style.display = itemText.includes(term) ? '' : 'none';
+    });
+  });
+
+  // --------------------------
+  // Dropdown toggle logic
+  // --------------------------
+  (function() {
+    const closeAll = () => {
+      document.querySelectorAll(".dropdown-menu.show").forEach(menu => {
+        menu.classList.remove("show");
+        const btn = menu.closest(".dropdown")?.querySelector(".dropdown-toggle");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+      });
+    };
+
+    document.addEventListener("click", e => {
+      const toggle = e.target.closest(".dropdown-toggle");
+      if (toggle) {
+        e.preventDefault();
+        e.stopPropagation();
+        const dropdown = toggle.closest(".dropdown");
+        const menu = dropdown.querySelector(".dropdown-menu");
+        const isOpen = menu.classList.contains("show");
+        closeAll();
+        if (!isOpen) {
+          menu.classList.add("show");
+          toggle.setAttribute("aria-expanded", "true");
+        }
+        return;
+      }
+
+      const insideMenu = e.target.closest(".dropdown-menu");
+      if (insideMenu && e.target.tagName === "A") closeAll();
+      if (!insideMenu) closeAll();
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeAll();
+    });
+  })();
+
+});
 </script>
 </x-layouts.app>
