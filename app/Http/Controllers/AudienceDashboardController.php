@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Contact;
 
 class AudienceDashboardController extends Controller
 {
-    public function dashboards()
+    public function index()
     {
-        // Later you can pass dynamic stats here
-        return view('audience.dashboards');
+        $audienceName = 'Jaycee';
+        $totalContacts = Contact::count();
+        $totalSubscribers = Contact::where('subscribed', true)->count();
+
+        return view('audience.dashboards', compact('audienceName', 'totalContacts', 'totalSubscribers'));
     }
 }

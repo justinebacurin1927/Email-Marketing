@@ -76,3 +76,5 @@ Route::post('/tags/bulk-delete', [TagController::class, 'bulkDestroy'])->name('t
 // OPTIONAL AUDIENCE CONTROLLER DASHBOARD
 Route::get('/audience-dashboard', [AudienceController::class, 'index'])->name('audience.dashboard');
 
+Route::get('/audience/dashboards', [AudienceDashboardController::class, 'index'])->name('dashboard.index');
+

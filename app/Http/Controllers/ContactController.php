@@ -19,6 +19,12 @@ class ContactController extends Controller
     $tags = Tag::all();
 
     return view('audience.audience', compact('contacts', 'tags'));
+
+    $totalContacts = Contact::count();
+    $totalSubscribers = Contact::where('subscribed', true)->count();
+
+    return view('audience.dashboards', compact('totalContacts', 'totalSubscribers'));
+
 }
 
 
