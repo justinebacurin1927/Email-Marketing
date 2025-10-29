@@ -11,7 +11,6 @@ class Contact extends Model
 
     protected $fillable = [
         'email',
-        'permission',
         'first_name',
         'last_name',
         'company',
@@ -23,14 +22,8 @@ class Contact extends Model
         'region',
         'postal',
         'country',
+        'tags',
         'permission',
         'subscribed'
     ];
-
-public function tags()
-{
-    return $this->belongsToMany(Tag::class, 'contact_tag', 'contact_id', 'tag_id');
 }
-
-}
-

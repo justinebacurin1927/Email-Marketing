@@ -18,8 +18,7 @@
       <div class="col-lg-6 col-md-8">
         <div class="card border-0 shadow-sm">
           <div class="card-body">
-            <form action="{{ route('contacts.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
-              @csrf
+<form action="/api/contacts/import" method="POST" enctype="multipart/form-data" id="importForm">
 
               <div class="mb-4">
                 <label for="file" class="form-label fw-semibold">Select file to import</label>

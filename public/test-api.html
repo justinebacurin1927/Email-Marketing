@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h3>Test API Contact</h3>
+<form id="apiForm">
+    Email: <input type="email" name="email"><br>
+    Name: <input type="text" name="name"><br>
+    Subscribed: <input type="checkbox" name="subscribed" checked><br>
+    <button type="submit">Send</button>
+</form>
+
+<pre id="result"></pre>
+
+<script>
+const token = "YOUR_TOKEN_HERE"; // paste the token here
+const form = document.getElementById('apiForm');
+const result = document.getElementById('result');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const data = {
+        email: formData.get('email'),
+        name: formData.get('name'),
+        subscribed: formData.get('subscribed') === "on"
+    };
+
+    const res = await fetch("/api/contacts", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(data)
+    });
+
+    const json = await res.json();
+    result.textContent = JSON.stringify(json, null, 2);
+});
+</script>
+</body>
+</html>
