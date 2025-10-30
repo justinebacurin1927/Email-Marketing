@@ -27,7 +27,6 @@ class ContactController extends Controller
 
 }
 
-
     public function create()
     {
         return view('audience.add-contact');
@@ -123,15 +122,15 @@ class ContactController extends Controller
                 $contact = Contact::create($this->contactData($row));
             }
 
-            if (!empty($tagIds) && isset($contact)) {
-                $contact->tags()->syncWithoutDetaching($tagIds);
+        if (!empty($tagIds) && isset($contact)) {
+            $contact->tags()->syncWithoutDetaching($tagIds);
 
-                // 🧩 Step 3: Debug log
-                \Log::info('Tags attached for contact (CSV Import)', [
-                    'contact_id' => $contact->id,
-                    'tag_ids' => $tagIds,
-                ]);
-            }
+            \Log::info('Tags attached for contact (CSV Import)', [
+                'contact_id' => $contact->id,
+                'tag_ids' => $tagIds,
+            ]);
+        }
+
 
             $imported++;
         }
@@ -172,7 +171,6 @@ class ContactController extends Controller
             if (!empty($tagIds) && isset($contact)) {
                 $contact->tags()->syncWithoutDetaching($tagIds);
 
-                // 🧩 Step 3: Debug log
                 \Log::info('Tags attached for contact (Excel Import)', [
                     'contact_id' => $contact->id,
                     'tag_ids' => $tagIds,

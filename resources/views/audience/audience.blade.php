@@ -1,6 +1,28 @@
 <x-layouts.app>
   <x-topbar />
 
+  @if (session('success'))
+<div id="successAlert" class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 mx-3 shadow" role="alert" style="z-index: 1050;">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const alert = document.getElementById('successAlert');
+    if (!alert) return;
+
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+        bsAlert.close();
+    }, 5000);
+});
+</script>
+@endif
+
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -186,24 +208,15 @@
         </button>
       </div>
 
-                        @if (session('success'))
-  <div class="alert alert-success alert-dismissible fade show mt-4 mx-4" role="alert">
-    <i class="bi bi-check-circle-fill me-2"></i>
-    {{ session('success') }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-@endif
-
 <p class="text-muted mb-3">
   {{ $contacts->total() }} total contact{{ $contacts->total() !== 1 ? 's' : '' }}.
   {{ $contacts->total() }} email subscriber{{ $contacts->total() !== 1 ? 's' : '' }}.
 </p>
 
-
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div id="searchBarWrapper" class="input-group" style="max-width: 350px;">
     <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-    <input type="text" class="form-control border-start-0" placeholder="Search contacts" />
+    <input type="text" id="globalSearchInput" class="form-control border-start-0" placeholder="Search contacts" />
   </div>
 
   <a href="{{ route('contacts.export') }}" class="btn" style="background-color: teal; color: white;">
@@ -263,11 +276,12 @@
     <td>{{ $contact->birthday }}</td>
     <td>{{ $contact->company }}</td>
     <td>
-        @forelse($contact->tags as $tag)
-            <span class="badge bg-primary me-1">{{ $tag->name }}</span>
-        @empty
-            -
-        @endforelse
+@forelse($contact->tags ?? [] as $tag)
+    <span class="badge bg-primary me-1">{{ $tag->name }}</span>
+@empty
+    -
+@endforelse
+
     </td>
     <td><span class="badge bg-success-subtle text-success border">Subscribed</span></td>
     <td>Manual Add</td>
@@ -356,15 +370,6 @@
     </div>
   </div>
 </div>
-
-  @if (session('success'))
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-</script>
-@endif
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

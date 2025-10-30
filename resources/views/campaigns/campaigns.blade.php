@@ -9,10 +9,11 @@
     <p class="text-secondary small mb-0">Manage and track your email campaigns</p>
   </div>
   <div class="d-flex align-items-center gap-2">
-    <button class="btn btn-outline-secondary">View analytics</button>
-    <button class="btn btn-primary">Create</button>
+    <a href="{{ route('campaigns.index') }}" class="btn btn-outline-secondary">View analytics</a>
+<a href="{{ route('campaigns.create') }}" class="btn btn-primary">Create</a>
   </div>
 </header>
+
 
 
     <!-- CARD -->
@@ -74,29 +75,38 @@
               <th class="text-end">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><input type="checkbox"></td>
-              <td>
-                <div class="fw-semibold text-primary">Untitled</div>
-                <div class="text-muted small">Regular email</div>
-                <div class="text-muted small">Last edited Thu, Oct 16, 03:07 AM by Justine Cane Bacurin</div>
-              </td>
-              <td><span class="badge bg-light text-dark border">Draft</span></td>
-              <td><a href="#" class="text-decoration-none">Jaycee</a></td>
-              <td>-</td>
-              <td class="text-end">
-                <div class="dropdown">
-                  <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Edit</button>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#">Edit campaign</a></li>
-                    <li><a class="dropdown-item" href="#">Duplicate</a></li>
-                    <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
-                  </ul>
-                </div>
-              </td>
-            </tr>
-          </tbody>
+<tbody>
+@foreach($campaigns as $campaign)
+<tr>
+    <td><input type="checkbox"></td>
+    <td>
+        <div class="fw-semibold text-primary">{{ $campaign->name }}</div>
+        <div class="text-muted small">{{ ucfirst($campaign->type) ?? 'Regular email' }}</div>
+        <div class="text-muted small">Last edited {{ $campaign->updated_at->format('D, M d, h:i A') }} by {{ $campaign->created_by ?? 'Admin' }}</div>
+    </td>
+    <td>
+        @if($campaign->status == 'draft')
+            <span class="badge bg-light text-dark border">Draft</span>
+        @elseif($campaign->status == 'sent')
+            <span class="badge bg-success">Sent</span>
+        @endif
+    </td>
+<td><a href="#" class="text-decoration-none">{{ $campaign->contact->email ?? '-' }}</a></td>
+      <td>{{ $campaign->analytics ?? '-' }}</td>
+    <td class="text-end">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Edit</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#">Edit campaign</a></li>
+                <li><a class="dropdown-item" href="#">Duplicate</a></li>
+                <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
+            </ul>
+        </div>
+    </td>
+</tr>
+@endforeach
+</tbody>
+
         </table>
       </div>
 

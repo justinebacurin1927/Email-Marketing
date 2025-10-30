@@ -18,7 +18,8 @@
       <div class="col-lg-6 col-md-8">
         <div class="card border-0 shadow-sm">
           <div class="card-body">
-<form action="/api/contacts/import" method="POST" enctype="multipart/form-data" id="importForm">
+            <form action="{{ route('contacts.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+    @csrf
 
               <div class="mb-4">
                 <label for="file" class="form-label fw-semibold">Select file to import</label>
@@ -31,21 +32,40 @@
                 <input type="text" name="tags" id="tags" class="form-control" placeholder="e.g. Newsletter, 2025 Campaign">
               </div>
 
-              <div class="mb-4">
-                <label class="form-label fw-semibold">Import options</label>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="import_type" id="updateExisting" value="update" checked>
-                  <label class="form-check-label" for="updateExisting">
-                    Update existing contacts if they already exist
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="import_type" id="skipExisting" value="skip">
-                  <label class="form-check-label" for="skipExisting">
-                    Skip existing contacts
-                  </label>
-                </div>
-              </div>
+<div class="mb-4">
+  <label class="form-label fw-semibold">Import options</label>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="import_type" id="mergeExisting" value="merge" checked>
+    <label 
+      class="form-check-label"
+      for="mergeExisting"
+      data-bs-toggle="popover"
+      data-bs-trigger="hover focus"
+      data-bs-placement="right"
+      data-bs-content="Update existing contacts while keeping their current data. Only missing fields will be added or updated."
+      style="cursor: help;"
+    >
+      <strong>Merge</strong>
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="import_type" id="overwriteExisting" value="overwrite">
+    <label 
+      class="form-check-label"
+      for="overwriteExisting"
+      data-bs-toggle="popover"
+      data-bs-trigger="hover focus"
+      data-bs-placement="right"
+      data-bs-content="Completely replace the existing contact data with the new information from your file."
+      style="cursor: help;"
+    >
+      <strong>Overwrite</strong>
+    </label>
+  </div>
+</div>
+
 
               <div class="d-flex justify-content-end gap-2">
                 <button type="reset" class="btn btn-outline-secondary">Reset</button>
@@ -58,27 +78,35 @@
         </div>
 
         <!-- SAMPLE FILE DOWNLOAD -->
-<div class="mt-4">
-  <p class="fw-semibold mb-2">Sample import templates:</p>
-
-  <div class="d-flex flex-column gap-1">
-    <a href="{{ asset('samples/sample_contacts.csv') }}" class="text-decoration-none">
-      <i class="bi bi-file-earmark-arrow-down"></i> Download CSV template
-    </a>
-    <a href="{{ asset('samples/sample_contacts.xlsx') }}" class="text-decoration-none">
-      <i class="bi bi-file-earmark-arrow-down"></i> Download XLSX template
-    </a>
-    <a href="{{ asset('samples/sample_contacts.xls') }}" class="text-decoration-none">
-      <i class="bi bi-file-earmark-arrow-down"></i> Download XLS template
-    </a>
-  </div>
-</div>
+        <div class="mt-4">
+          <p class="fw-semibold mb-2">Sample import templates:</p>
+          <div class="d-flex flex-column gap-1">
+            <a href="{{ asset('samples/sample_contacts.csv') }}" class="text-decoration-none">
+              <i class="bi bi-file-earmark-arrow-down"></i> Download CSV template
+            </a>
+            <a href="{{ asset('samples/sample_contacts.xlsx') }}" class="text-decoration-none">
+              <i class="bi bi-file-earmark-arrow-down"></i> Download XLSX template
+            </a>
+            <a href="{{ asset('samples/sample_contacts.xls') }}" class="text-decoration-none">
+              <i class="bi bi-file-earmark-arrow-down"></i> Download XLS template
+            </a>
+          </div>
+        </div>
 
       </div>
     </div>
   </div>
 
   <script>
+    // Popover init
+    document.addEventListener('DOMContentLoaded', function () {
+      const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+      const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl);
+      });
+    });
+
+    // Disable submit button when form submits
     document.getElementById('importForm').addEventListener('submit', function() {
       const btn = this.querySelector('button[type="submit"]');
       btn.disabled = true;
