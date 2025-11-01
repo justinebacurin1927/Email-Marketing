@@ -69,8 +69,44 @@ class CampaignController extends Controller
 
     // Delete campaign
     public function destroy(Campaign $campaign)
-    {
-        $campaign->delete();
-        return redirect()->route('campaigns.index')->with('success', 'Campaign deleted!');
+{
+    $campaign->delete();
+
+    if (request()->expectsJson()) {
+        return response()->json(['success' => true]);
     }
+
+    return redirect()->route('campaigns.index')->with('success', 'Campaign deleted successfully.');
+}
+
+public function duplicate(Campaign $campaign)
+{
+    \Log::info('Duplicating campaign:', $campaign->toArray());
+
+    try {
+        $newCampaign = $campaign->replicate();
+        $newCampaign->name = $campaign->name . ' (Copy)';
+        $newCampaign->status = 'draft';
+        $newCampaign->created_by = auth()->user()->name ?? 'Admin';
+        $newCampaign->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Campaign duplicated successfully.',
+            'campaign' => $newCampaign
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Duplicate error: ' . $e->getMessage());
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+public function viewEmail(Campaign $campaign)
+{
+    $template = $campaign->template; // this will be a MessageTemplate instance
+    return view('campaigns.view-email', compact('campaign', 'template'));
+}
+
+
+
 }

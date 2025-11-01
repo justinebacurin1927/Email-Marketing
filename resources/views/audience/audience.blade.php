@@ -373,6 +373,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  const deleteForm = document.getElementById('deleteSelectedForm');
+
+  deleteForm.addEventListener('submit', function (e) {
+    // Remove any existing hidden inputs
+    this.querySelectorAll('input[name="selected_contacts[]"]').forEach(el => el.remove());
+
+    // Collect checked boxes
+    const checked = document.querySelectorAll('.contact-checkbox:checked');
+
+    // If nothing selected, stop
+    if (checked.length === 0) {
+      e.preventDefault();
+      alert('No contacts selected for deletion.');
+      return;
+    }
+
+    // Append hidden inputs for selected IDs
+    checked.forEach(chk => {
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'selected_contacts[]';
+      hidden.value = chk.value;
+      this.appendChild(hidden);
+    });
+
+    // Ask for confirmation again for safety
+    if (!confirm('Delete selected contacts?')) {
+      e.preventDefault();
+    }
+  });
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
   // --------------------------
   // DOM elements
   // --------------------------
@@ -576,6 +612,30 @@ document.getElementById('editContactForm').addEventListener('submit', function(e
     });
   })();
 
+});
+
+  // --------------------------
+  // For Delete Function
+  // --------------------------
+
+document.getElementById('deleteSelectedForm').addEventListener('submit', function (e) {
+    // Remove any existing hidden inputs (to avoid duplicates)
+    this.querySelectorAll('input[name="selected_contacts[]"]').forEach(el => el.remove());
+
+    // Add hidden inputs for each selected checkbox
+    document.querySelectorAll('.contact-checkbox:checked').forEach(chk => {
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'selected_contacts[]';
+        hidden.value = chk.value;
+        this.appendChild(hidden);
+    });
+
+    // Optional: prevent submission if nothing is selected
+    if (this.querySelectorAll('input[name="selected_contacts[]"]').length === 0) {
+        e.preventDefault();
+        alert('No contacts selected for deletion.');
+    }
 });
 </script>
 </x-layouts.app>

@@ -10,11 +10,9 @@
   </div>
   <div class="d-flex align-items-center gap-2">
     <a href="{{ route('campaigns.index') }}" class="btn btn-outline-secondary">View analytics</a>
-<a href="{{ route('campaigns.create') }}" class="btn btn-primary">Create</a>
+    <a href="{{ route('campaigns.create') }}" class="btn btn-primary">Create</a>
   </div>
 </header>
-
-
 
     <!-- CARD -->
     <section class="bg-white border rounded p-3 mb-4 shadow-sm">
@@ -29,10 +27,14 @@
       </ul>
 
       <!-- LIST VIEW -->
-      <div id="list-content">
-        <div class="mb-3 d-flex align-items-center flex-wrap gap-3">
-          <input type="text" class="form-control" placeholder="Search campaigns" style="max-width: 400px;">
-          <div class="text-muted small">Sort by: <a href="#" class="text-decoration-none">Date edited</a></div>
+        <div id="list-content">
+            <div class="mb-3 d-flex align-items-center flex-wrap gap-3">
+    <input id="campaign-search" type="text" class="form-control" placeholder="Search campaigns" style="max-width: 400px;">
+    <div class="text-muted small">Sort by: 
+        <a href="#" class="text-decoration-none sort-link" data-sort="updated" data-order="desc">Date edited</a>
+        | <a href="#" class="text-decoration-none sort-link" data-sort="name" data-order="asc">Name</a>
+    </div>
+
         </div>
 
         <div class="mb-3 d-flex flex-wrap gap-3">
@@ -67,7 +69,8 @@
         <table class="table align-middle">
           <thead>
             <tr>
-              <th><input type="checkbox"></th>
+              <!-- Top checkbox in table header -->
+              <th><input type="checkbox" id="select-all"></th>
               <th>Name</th>
               <th>Status</th>
               <th>Audience</th>
@@ -77,29 +80,35 @@
           </thead>
 <tbody>
 @foreach($campaigns as $campaign)
-<tr>
+<tr id="campaign-row-{{ $campaign->id }}" 
+    data-name="{{ strtolower($campaign->name) }}" 
+    data-status="{{ $campaign->status }}" 
+    data-updated="{{ $campaign->updated_at }}">
     <td><input type="checkbox"></td>
     <td>
         <div class="fw-semibold text-primary">{{ $campaign->name }}</div>
         <div class="text-muted small">{{ ucfirst($campaign->type) ?? 'Regular email' }}</div>
         <div class="text-muted small">Last edited {{ $campaign->updated_at->format('D, M d, h:i A') }} by {{ $campaign->created_by ?? 'Admin' }}</div>
     </td>
-    <td>
-        @if($campaign->status == 'draft')
-            <span class="badge bg-light text-dark border">Draft</span>
-        @elseif($campaign->status == 'sent')
-            <span class="badge bg-success">Sent</span>
-        @endif
-    </td>
-<td><a href="#" class="text-decoration-none">{{ $campaign->contact->email ?? '-' }}</a></td>
-      <td>{{ $campaign->analytics ?? '-' }}</td>
+<td>
+    @if($campaign->status == 'draft')
+        <span class="badge bg-light text-dark border">Draft</span>
+    @elseif($campaign->status == 'sent')
+        <span class="badge bg-success">Sent</span>
+    @elseif($campaign->status == 'scheduled')
+        <span class="badge bg-warning text-dark border">Scheduled</span>
+    @endif
+</td>
+    <td><a href="#" class="text-decoration-none">{{ $campaign->contact->email ?? '-' }}</a></td>
+    <td>{{ $campaign->analytics ?? '-' }}</td>
     <td class="text-end">
         <div class="dropdown">
             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Edit</button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#">Edit campaign</a></li>
-                <li><a class="dropdown-item" href="#">Duplicate</a></li>
-                <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
+                <li><a class="dropdown-item" href="{{ route('campaigns.view-email', $campaign->id) }}">View Email</a></li>
+                <li><a class="dropdown-item" href="{{ route('campaigns.edit', $campaign->id) }}">Edit campaign</a></li>
+                <li><a class="dropdown-item duplicate-campaign" href="#" data-id="{{ $campaign->id }}">Duplicate</a></li>
+                <li><a class="dropdown-item text-danger delete-campaign" href="#" data-id="{{ $campaign->id }}">Delete</a></li>
             </ul>
         </div>
     </td>
@@ -141,8 +150,6 @@
           </div>
         </div>
 
-        
-
         <div id="calendar" style="min-height: 600px; width: 100%; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.375rem;"></div>
       </div>
     </section>
@@ -153,44 +160,34 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/main.min.js"></script>
   
   <style>
-    /* Make the section header sticky */
   .sticky-section {
     position: sticky;
-    top: 70px; /* adjust if you have a topbar above */
-    background-color: #ffffff; /* same as body or card bg */
+    top: 70px;
+    background-color: #ffffff;
     z-index: 100;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
-
-  /* Optional: add some extra margin to avoid jump */
   section.bg-white {
-    margin-top: 0; /* header already has mb-4 */
+    margin-top: 0;
   }
-
-    /* Ensure calendar container is visible */
-    #calendar {
-      width: 100%;
-      min-height: 600px;
-    }
-    
-    /* Fix potential Bootstrap conflicts */
-    .fc {
-      font-family: inherit;
-    }
-    
-    .fc-toolbar {
-      margin-bottom: 1rem;
-    }
-    
-    /* Ensure calendar events are visible */
-    .fc-event {
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 2px 4px;
-      font-size: 0.85em;
-    }
+  #calendar {
+    width: 100%;
+    min-height: 600px;
+  }
+  .fc {
+    font-family: inherit;
+  }
+  .fc-toolbar {
+    margin-bottom: 1rem;
+  }
+  .fc-event {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.85em;
+  }
   </style>
 
   <script>
@@ -204,7 +201,6 @@
       let calendarInitialized = false;
       let calendar;
 
-      // Check if FullCalendar is loaded
       function checkFullCalendar() {
         if (typeof FullCalendar === 'undefined') {
           console.error('FullCalendar library not loaded');
@@ -213,7 +209,6 @@
         return true;
       }
 
-      // toggle between tabs
       listTab.addEventListener('click', e => {
         e.preventDefault();
         listTab.classList.add('active');
@@ -229,20 +224,10 @@
         listContent.style.display = 'none';
         calContent.style.display = 'block';
 
-        console.log('Calendar tab clicked');
-        console.log('Calendar element:', calendarEl);
-        console.log('FullCalendar available:', typeof FullCalendar);
+        if (!checkFullCalendar()) return;
 
-        // Check if FullCalendar is loaded before proceeding
-        if (!checkFullCalendar()) {
-          console.error('FullCalendar library not available');
-          return;
-        }
-
-        // render calendar only once
         if (!calendarInitialized) {
           try {
-            console.log('Initializing calendar...');
             calendar = new FullCalendar.Calendar(calendarEl, {
               initialView: 'dayGridMonth',
               height: 600,
@@ -269,22 +254,16 @@
                 }
               }
             });
-            console.log('Calendar created, rendering...');
             calendar.render();
-            console.log('Calendar rendered successfully');
             calendarInitialized = true;
           } catch (error) {
             console.error('Error initializing calendar:', error);
           }
-        } else {
-          console.log('Calendar already initialized');
         }
       });
 
-      // filtering logic
       function applyFilters() {
         if (!calendarInitialized) return;
-
         const type = document.getElementById('filter-type').value;
         const status = document.getElementById('filter-status').value;
         const holiday = document.getElementById('filter-holiday').value;
@@ -315,6 +294,148 @@
       document.getElementById('filter-type').addEventListener('change', applyFilters);
       document.getElementById('filter-status').addEventListener('change', applyFilters);
       document.getElementById('filter-holiday').addEventListener('change', applyFilters);
+
+      // --------------------------
+      // Delete Function
+      // --------------------------
+      document.querySelectorAll('.delete-campaign').forEach(btn => {
+        btn.addEventListener('click', async e => {
+          e.preventDefault();
+          const id = btn.dataset.id;
+          if (!confirm('Delete this campaign?')) return;
+
+          try {
+            const response = await fetch(`/campaigns/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+              }
+            });
+
+            if (response.ok) {
+              document.getElementById(`campaign-row-${id}`).remove();
+              alert('Campaign deleted successfully.');
+            } else {
+              alert('Failed to delete campaign.');
+            }
+          } catch (error) {
+            console.error('Error deleting campaign:', error);
+            alert('Error deleting campaign.');
+          }
+        });
+      });
     });
+
+    // --------------------------
+    // Search Function
+    // --------------------------
+    document.getElementById('campaign-search').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('#list-content tbody tr').forEach(row => {
+            const name = row.dataset.name;
+            const status = row.dataset.status;
+            if (name.includes(query) || status.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // --------------------------
+    // Checkbox Select All
+    // --------------------------
+    const selectAllCheckbox = document.getElementById('select-all');
+    const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+
+    selectAllCheckbox.addEventListener('change', () => {
+      rowCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+    });
+
+    rowCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (!cb.checked) {
+          selectAllCheckbox.checked = false;
+        } else {
+          // If all checkboxes are checked, check "select all"
+          const allChecked = Array.from(rowCheckboxes).every(c => c.checked);
+          selectAllCheckbox.checked = allChecked;
+        }
+      });
+    });
+
+
+    // --------------------------
+    // Sorting Function
+    // --------------------------
+    document.querySelectorAll('.sort-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sortField = this.dataset.sort;
+            const sortOrder = this.dataset.order; // 'asc' or 'desc'
+
+            const tbody = document.querySelector('#list-content tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                let aVal = a.dataset[sortField];
+                let bVal = b.dataset[sortField];
+
+                // for dates, convert to timestamp
+                if (sortField === 'updated') {
+                    aVal = new Date(aVal).getTime();
+                    bVal = new Date(bVal).getTime();
+                }
+
+                if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // re-append sorted rows
+            rows.forEach(r => tbody.appendChild(r));
+
+            // toggle order for next click
+            this.dataset.order = sortOrder === 'asc' ? 'desc' : 'asc';
+        });
+    });
+
+    // --------------------------
+    // Dupicate Function
+    // --------------------------
+
+    document.querySelectorAll('.duplicate-campaign').forEach(btn => {
+  btn.addEventListener('click', async e => {
+    e.preventDefault();
+    const id = btn.dataset.id;
+    if (!confirm('Duplicate this campaign?')) return;
+
+    try {
+      const response = await fetch(`/campaigns/${id}/duplicate`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Campaign duplicated successfully.');
+        location.reload();
+      } else {
+        alert('Failed to duplicate campaign: ' + (data.error ?? 'Unknown error'));
+        console.error('Duplicate error:', data);
+      }
+    } catch (error) {
+      console.error('Error duplicating campaign:', error);
+      alert('Error duplicating campaign. Check console.');
+    }
+  });
+});
+
+
   </script>
 </x-layouts.app>

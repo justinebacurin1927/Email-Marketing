@@ -28,6 +28,8 @@ Route::post('/campaigns', [CampaignController::class, 'store'])->name('campaigns
 Route::get('/campaigns/{campaign}/edit', [CampaignController::class, 'edit'])->name('campaigns.edit');
 Route::put('/campaigns/{campaign}', [CampaignController::class, 'update'])->name('campaigns.update');
 Route::delete('/campaigns/{campaign}', [CampaignController::class, 'destroy'])->name('campaigns.destroy');
+Route::post('/campaigns/{campaign}/duplicate', [CampaignController::class, 'duplicate'])->name('campaigns.duplicate');
+Route::get('/campaigns/{campaign}/view-email', [CampaignController::class, 'viewEmail'])->name('campaigns.view-email');
 
 
 // MESSAGE TEMPLATES
