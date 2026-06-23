@@ -1,5 +1,4 @@
 <x-layouts.app>
-  <x-topbar />
 
   @if (session('success'))
 <div id="successAlert" class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 mx-3 shadow" role="alert" style="z-index: 1050;">

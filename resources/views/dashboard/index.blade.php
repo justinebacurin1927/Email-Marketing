@@ -1,128 +1,238 @@
 <x-layouts.app>
-    <x-header-home />
 
-  <style>
-  /* Buttons hover effect */
-  .btn-outline-primary:hover {
-    background-color: #0d6efd; /* new background color */
-    color: #ffffff; /* text color on hover */
-    border-color: #0d6efd; /* optional: change border color to match background */
-  }
+@php
+  $totalContacts = \App\Models\Contact::count();
+  $totalSubscribers = \App\Models\Contact::where('subscribed', true)->count();
+  $totalCampaigns = \App\Models\Campaign::count();
+  $totalTemplates = \App\Models\MessageTemplate::count();
+  $sentCampaigns = \App\Models\Campaign::where('status', 'sent')->count();
+  $draftCampaigns = \App\Models\Campaign::where('status', 'draft')->count();
+  $scheduledCampaigns = \App\Models\Campaign::where('status', 'scheduled')->count();
+  $recentCampaigns = \App\Models\Campaign::with('contact')->orderBy('created_at', 'desc')->take(5)->get();
+  $greeting = now()->format('a') == 'am' ? 'Morning' : 'Afternoon';
+  $userName = auth()->user()->name ?? 'Admin';
+@endphp
 
-  /* Optional: active/click effect */
-  .btn-outline-primary:active, .btn-outline-primary:focus {
-    background-color: #0a58ca;
-    color: #ffffff;
-    border-color: #0a58ca;
-  }
+<div class="px-4 py-4" style="margin-top: 4rem;">
+  <div class="mb-4">
+    <h1 class="h3 fw-bold" style="color: #1a1a2e;">Good {{ $greeting }}, {{ $userName }} 👋</h1>
+    <p class="text-secondary">Here's what's happening with your campaigns today.</p>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 12px;">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="small mb-1 text-white fw-semibold">Total Contacts</p>
+              <h3 class="fw-bold mb-0 text-white">{{ $totalContacts }}</h3>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(255,255,255,0.1);">
+              <span style="font-size: 1.3rem;">👥</span>
+            </div>
+          </div>
+          <small class="mt-2 d-block text-white fw-semibold">{{ $totalSubscribers }} subscribed</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0" style="background: linear-gradient(135deg, #e94560 0%, #c23152 100%); border-radius: 12px;">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="small mb-1 text-white fw-semibold">Subscribers</p>
+              <h3 class="fw-bold mb-0 text-white">{{ $totalSubscribers }}</h3>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(255,255,255,0.15);">
+              <span style="font-size: 1.3rem;">📧</span>
+            </div>
+          </div>
+          <small class="mt-2 d-block text-white fw-semibold">{{ $totalContacts > 0 ? round(($totalSubscribers / $totalContacts) * 100) : 0 }}% subscription rate</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0" style="background: linear-gradient(135deg, #533483 0%, #3b2261 100%); border-radius: 12px;">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="small mb-1 text-white fw-semibold">Campaigns</p>
+              <h3 class="fw-bold mb-0 text-white">{{ $totalCampaigns }}</h3>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(255,255,255,0.15);">
+              <span style="font-size: 1.3rem;">📨</span>
+            </div>
+          </div>
+          <small class="mt-2 d-block text-white fw-semibold">{{ $sentCampaigns }} sent, {{ $scheduledCampaigns }} scheduled</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0" style="background: linear-gradient(135deg, #0f3460 0%, #0a2540 100%); border-radius: 12px;">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="small mb-1 text-white fw-semibold">Templates</p>
+              <h3 class="fw-bold mb-0 text-white">{{ $totalTemplates }}</h3>
+            </div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(255,255,255,0.15);">
+              <span style="font-size: 1.3rem;">📄</span>
+            </div>
+          </div>
+          <small class="mt-2 d-block text-white fw-semibold">Ready to use in campaigns</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+        <div class="card-body">
+          <h5 class="fw-bold mb-2" style="color: #1a1a2e;">Campaign Analytics</h5>
+          <canvas id="campaignChart" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+        <div class="card-body d-flex flex-column">
+          <h5 class="fw-bold mb-2" style="color: #1a1a2e;">Campaign Status</h5>
+          <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+            <div style="max-width: 220px; width: 100%;">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3" style="color: #1a1a2e;">Quick Actions</h5>
+          <div class="row g-3">
+            <div class="col-6">
+              <a href="/add-contact" class="quick-action-card d-flex flex-column align-items-center justify-content-center p-3 rounded text-decoration-none" style="background: rgba(26, 26, 46, 0.08); transition: all 0.3s; min-height: 100px;">
+                <span style="font-size: 1.8rem; transition: transform 0.3s;">➕</span>
+                <span class="small mt-2 fw-semibold" style="color: #1a1a2e;">Add Contact</span>
+              </a>
+            </div>
+            <div class="col-6">
+              <a href="/import-contacts" class="quick-action-card d-flex flex-column align-items-center justify-content-center p-3 rounded text-decoration-none" style="background: rgba(233, 69, 96, 0.08); transition: all 0.3s; min-height: 100px;">
+                <span style="font-size: 1.8rem; transition: transform 0.3s;">📥</span>
+                <span class="small mt-2 fw-semibold" style="color: #e94560;">Import</span>
+              </a>
+            </div>
+            <div class="col-6">
+              <a href="/campaigns/create" class="quick-action-card d-flex flex-column align-items-center justify-content-center p-3 rounded text-decoration-none" style="background: rgba(83, 52, 131, 0.08); transition: all 0.3s; min-height: 100px;">
+                <span style="font-size: 1.8rem; transition: transform 0.3s;">📨</span>
+                <span class="small mt-2 fw-semibold" style="color: #533483;">Campaign</span>
+              </a>
+            </div>
+            <div class="col-6">
+              <a href="/template-form" class="quick-action-card d-flex flex-column align-items-center justify-content-center p-3 rounded text-decoration-none" style="background: rgba(15, 52, 96, 0.08); transition: all 0.3s; min-height: 100px;">
+                <span style="font-size: 1.8rem; transition: transform 0.3s;">📄</span>
+                <span class="small mt-2 fw-semibold" style="color: #0f3460;">Template</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0" style="color: #1a1a2e;">Recent Campaigns</h5>
+            <a href="/campaigns" class="small text-decoration-none" style="color: #e94560;">View all &rarr;</a>
+          </div>
+          @if($recentCampaigns->isEmpty())
+            <p class="text-secondary small mb-0">No campaigns yet. <a href="{{ route('campaigns.create') }}">Create your first campaign</a></p>
+          @else
+            <div class="list-group list-group-flush">
+              @foreach($recentCampaigns as $c)
+                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                  <div>
+                    <span class="fw-semibold" style="color: #1a1a2e;">{{ $c->name }}</span>
+                    <br><small class="text-secondary">{{ $c->contact->email ?? 'No recipient' }}</small>
+                  </div>
+                  <span class="badge rounded-pill px-3 {{ $c->status == 'sent' ? 'bg-success' : ($c->status == 'scheduled' ? 'bg-warning text-dark' : 'bg-secondary') }}">
+                    {{ ucfirst($c->status) }}
+                  </span>
+                </div>
+              @endforeach
+            </div>
+          @endif
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    new Chart(document.getElementById('campaignChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Sent', 'Draft', 'Scheduled'],
+        datasets: [{
+          data: [{{ $sentCampaigns }}, {{ $draftCampaigns }}, {{ $scheduledCampaigns }}],
+          backgroundColor: ['#1a1a2e', '#e94560', '#533483'],
+          borderRadius: 6,
+          barThickness: 40,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('statusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Sent', 'Draft', 'Scheduled'],
+        datasets: [{
+          data: [{{ $sentCampaigns }}, {{ $draftCampaigns }}, {{ $scheduledCampaigns }}],
+          backgroundColor: ['#1a1a2e', '#e94560', '#533483'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, padding: 8, boxWidth: 10, font: { size: 12 } } }
+        },
+        cutout: '75%',
+      }
+    });
+  });
+
+  document.querySelectorAll('.quick-action-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.style.transform = 'translateY(-4px)';
+      card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'translateY(0)';
+      card.style.boxShadow = 'none';
+    });
+  });
+</script>
+
+<style>
+  .quick-action-card { cursor: pointer; }
 </style>
 
-
-  <!-- Dashboard Tasks Section -->
-  <div class="px-3 px-md-4">
-    <header class="mb-4">
-      <h1 class="h4 fw-bold text-dark">Dashboard</h1>
-      <p class="text-secondary small">Manage your email templates and campaigns</p>
-    </header>
-
-    <section class="mb-4">
-      <h2 class="h6 fw-semibold mb-3">Tasks</h2>
-      <div class="row g-3">
-        <div class="col-12 col-md-6 col-lg-4">
-          <x-task-card title="Design new email" time="2h ago" />
-        </div>
-        <div class="col-12 col-md-6 col-lg-4">
-          <x-task-card title="Send campaign" time="1h ago" />
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <div class="px-3 px-md-4 mb-4">
-    <h4>Finish setting up your account</h4>
-    <div class="progress" style="height: 8px;">
-      <div class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-    </div>
-    <small class="text-muted d-block mt-2 mb-3">0 of 4 tasks completed</small>
-
-    <!-- Task Slider -->
-    <div class="d-flex overflow-auto gap-3" style="padding-bottom: 1px;">
-      <div class="card flex-shrink-0" style="width: 250px;">
-        <div class="card-body">
-          <h6 class="card-title">Add your contacts</h6>
-          <p class="card-text small">Upload your list of subscribers or import them from another app.</p>
-          <small class="text-muted">4 min</small>
-        </div>
-      </div>
-
-      <div class="card flex-shrink-0" style="width: 250px;">
-        <div class="card-body">
-          <h6 class="card-title">Connect an integration</h6>
-          <p class="card-text small">Leverage data to create more automated, personalized omni-channel marketing communications.</p>
-          <small class="text-muted">2 min</small>
-        </div>
-      </div>
-
-      <div class="card flex-shrink-0" style="width: 250px;">
-        <div class="card-body">
-          <h6 class="card-title">Import your brand</h6>
-          <p class="card-text small">We’ll create email designs using your fonts, logos, colors, and images.</p>
-          <small class="text-muted">2 seconds</small>
-        </div>
-      </div>
-
-      <div class="card flex-shrink-0" style="width: 250px;">
-        <div class="card-body">
-          <h6 class="card-title">Authenticate your email domain</h6>
-          <p class="card-text small">Strongly recommended to improve deliverability, avoid spam folders, and build your sender reputation.</p>
-          <small class="text-muted">4 min</small>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Templates Section -->
-  <div class="px-3 px-md-4">
-    <section class="mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h2 class="h6 fw-semibold mb-0">Start with a template</h2>
-        <a href="#" class="text-decoration-none">View all templates</a>
-      </div>
-
-      <div class="d-flex gap-2 mb-3 flex-wrap">
-        <button class="btn btn-outline-primary">All</button>
-        <button class="btn btn-outline-primary">Email</button>
-        <button class="btn btn-outline-primary">Automation</button>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-          <x-template-card title="Custom email design" type="Free" image="/img/template1.png" />
-        </div>
-        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-          <x-template-card title="Start from scratch" type="Email" image="/img/template2.png" />
-        </div>
-        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-          <x-template-card title="Welcome new contacts" type="Automation" image="/img/template3.png" />
-        </div>
-        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-          <x-template-card title="1:3:1 Column" type="Email" image="/img/template4.png" />
-        </div>
-        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-          <x-template-card title="Minimal" type="Email" image="/img/template5.png" />
-        </div>
-      </div>
-
-      <div class="mt-3 text-end">
-        <button class="btn btn-outline-primary">Start from Scratch</button>
-      </div>
-    </section>
-  </div>
-
-  <x-popup-cards :cards="[
-    ['image'=>'/img/popup1.png','alt'=>'Discount popup','icon'=>'bi bi-tag','title'=>'Discount popup','text'=>'Offer a discount to new subscribers','link'=>'#','linkText'=>'See discount templates'],
-    ['image'=>'/img/popup2.png','alt'=>'Newsletter popup','icon'=>'bi bi-send','title'=>'Newsletter popup','text'=>'Stay in the know','link'=>'#','linkText'=>'See newsletter templates'],
-    ['image'=>'/img/popup3.png','alt'=>'Free content popup','icon'=>'bi bi-file-earmark-text','title'=>'Free content popup','text'=>'Download an e-book or guide','link'=>'#','linkText'=>'See free content templates'],
-    ['image'=>'/img/popup4.png','alt'=>'Free consultation','icon'=>'bi bi-calendar-check','title'=>'Free consultation','text'=>'Set up an initial meeting','link'=>'#','linkText'=>'See free consultation templates']
-  ]" />
 </x-layouts.app>

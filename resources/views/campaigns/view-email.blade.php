@@ -1,5 +1,4 @@
 <x-layouts.app>
-    <x-topbar />
 
     <div class="px-4 py-4 mt-5">
         <h1 class="h4 fw-bold mb-3">{{ $campaign->name }} - Email Preview</h1>

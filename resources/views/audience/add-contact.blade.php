@@ -1,5 +1,4 @@
 <x-layouts.app>
-  <x-topbar/>
 
   <title>Add Contact</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">

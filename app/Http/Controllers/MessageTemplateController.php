@@ -22,13 +22,11 @@ class MessageTemplateController extends Controller
     {
         $request->validate([
             'name' => 'required',
+            'subject' => 'required',
             'body' => 'required',
         ]);
 
-        MessageTemplate::create([
-            'name' => $request->name,
-            'body' => $request->body,
-        ]);
+        MessageTemplate::create($request->only('name', 'subject', 'body'));
 
         return redirect()->route('templates.index');
     }
@@ -43,11 +41,12 @@ public function update(Request $request, $id)
 {
     $request->validate([
         'name' => 'required',
+        'subject' => 'required',
         'body' => 'required',
     ]);
 
     $template = MessageTemplate::findOrFail($id);
-    $template->update($request->only('name', 'body'));
+    $template->update($request->only('name', 'subject', 'body'));
 
     return redirect()->route('templates.index');
 }

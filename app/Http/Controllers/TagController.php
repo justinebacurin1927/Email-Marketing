@@ -12,16 +12,7 @@ class TagController extends Controller
     public function index()
     {
         $tags = Tag::orderBy('name')->get();
-        return view('audience.audience-tags', compact('tags')); // Make sure this matches your blade file name
-
-        // Eager load contacts with tags
-        $contacts = Contact::with('tags')->latest()->get();
-
-        // Fetch up to 50 tags for dropdown
-        $tags = Tag::orderBy('name')->take(50)->get();
-
-        return view('audience.audience', compact('contacts', 'tags'));
-
+        return view('audience.audience-tags', compact('tags'));
     }
 
     public function store(Request $request): JsonResponse

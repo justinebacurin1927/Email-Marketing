@@ -32,6 +32,12 @@ public function tags()
     return $this->belongsToMany(Tag::class, 'contact_tag', 'contact_id', 'tag_id');
 }
 
+public function campaigns()
+{
+    return $this->belongsToMany(Campaign::class, 'campaign_contact')
+        ->withTimestamps();
+}
+
 
 }
 

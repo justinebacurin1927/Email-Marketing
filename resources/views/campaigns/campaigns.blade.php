@@ -1,5 +1,4 @@
 <x-layouts.app>
-  <x-topbar />
 
   <div class="px-4 py-4 mt-5">
     <!-- HEADER -->
@@ -74,7 +73,7 @@
               <th>Name</th>
               <th>Status</th>
               <th>Audience</th>
-              <th>Analytics</th>
+              <th>Sent At</th>
               <th class="text-end">Actions</th>
             </tr>
           </thead>
@@ -99,12 +98,37 @@
         <span class="badge bg-warning text-dark border">Scheduled</span>
     @endif
 </td>
-    <td><a href="#" class="text-decoration-none">{{ $campaign->contact->email ?? '-' }}</a></td>
-    <td>{{ $campaign->analytics ?? '-' }}</td>
+    <td>
+      @php
+        $recipientList = collect();
+        foreach ($campaign->contacts as $rc) { $recipientList->push($rc->email); }
+        foreach ($campaign->tags as $rt) { $recipientList->push('[' . $rt->name . ']'); }
+      @endphp
+      @if($recipientList->isNotEmpty())
+        <span class="text-muted small">{{ $recipientList->take(3)->implode(', ') }}{{ $recipientList->count() > 3 ? '...' : '' }}</span>
+      @else
+        <span class="text-muted small">{{ $campaign->contact->email ?? '-' }}</span>
+      @endif
+    </td>
+    <td>{{ $campaign->sent_at ? \Carbon\Carbon::parse($campaign->sent_at)->format('M d, h:i A') : '-' }}</td>
     <td class="text-end">
         <div class="dropdown">
-            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Edit</button>
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Actions</button>
             <ul class="dropdown-menu dropdown-menu-end">
+                @if($campaign->status !== 'sent')
+                <li>
+                    <form action="{{ route('campaigns.send', $campaign->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="dropdown-item text-success fw-semibold">Send Now</button>
+                    </form>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                @endif
+                @if($campaign->status == 'draft' || $campaign->status == 'scheduled')
+                <li>
+                    <a class="dropdown-item" href="{{ route('campaigns.send-preview', $campaign->id) }}">Preview Email</a>
+                </li>
+                @endif
                 <li><a class="dropdown-item" href="{{ route('campaigns.view-email', $campaign->id) }}">View Email</a></li>
                 <li><a class="dropdown-item" href="{{ route('campaigns.edit', $campaign->id) }}">Edit campaign</a></li>
                 <li><a class="dropdown-item duplicate-campaign" href="#" data-id="{{ $campaign->id }}">Duplicate</a></li>

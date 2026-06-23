@@ -1,5 +1,4 @@
 <x-layouts.bp-inbox>
-  <x-topbar/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
   <div class="d-flex flex-grow-1" style="margin-left: 16rem; margin-top: 4rem; height: calc(100vh - 4rem);">

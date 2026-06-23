@@ -12,19 +12,10 @@ class ContactController extends Controller
 {
    public function index()
 {
-    // Eager load tags for contacts
     $contacts = Contact::with('tags')->orderBy('created_at', 'desc')->paginate(10);
-
-    // Fetch all tags for the dropdown
     $tags = Tag::all();
 
     return view('audience.audience', compact('contacts', 'tags'));
-
-    $totalContacts = Contact::count();
-    $totalSubscribers = Contact::where('subscribed', true)->count();
-
-    return view('audience.dashboards', compact('totalContacts', 'totalSubscribers'));
-
 }
 
     public function create()

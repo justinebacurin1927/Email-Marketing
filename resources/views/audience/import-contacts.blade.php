@@ -1,5 +1,4 @@
 <x-layouts.app>
-  <x-topbar />
 
   <div class="container-fluid py-5 mt-5">
     <!-- HEADER -->

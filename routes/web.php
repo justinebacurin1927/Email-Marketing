@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AudienceController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InboxController;
@@ -9,19 +8,20 @@ use App\Http\Controllers\SourceController;
 use App\Http\Controllers\MessageTemplateController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\AudienceDashboardController;
-use App\Http\Controllers\Api\ApiContactImportController;
 use App\Http\Controllers\CampaignController;
-
-// DATABASE TEST
-Route::get('/db-test', fn() => DB::select('SHOW TABLES'));
 
 // DASHBOARD & PAGES
 Route::get('/', fn() => view('dashboard.index'));
-Route::get('/automation', fn() => view('automation'));
+Route::get('/automation', fn() => redirect()->route('automations.index'));
+Route::get('/automations', [App\Http\Controllers\AutomationController::class, 'index'])->name('automations.index');
+Route::get('/automations/create', [App\Http\Controllers\AutomationController::class, 'create'])->name('automations.create');
+Route::post('/automations', [App\Http\Controllers\AutomationController::class, 'store'])->name('automations.store');
+Route::get('/automations/{automation}/edit', [App\Http\Controllers\AutomationController::class, 'edit'])->name('automations.edit');
+Route::put('/automations/{automation}', [App\Http\Controllers\AutomationController::class, 'update'])->name('automations.update');
+Route::delete('/automations/{automation}', [App\Http\Controllers\AutomationController::class, 'destroy'])->name('automations.destroy');
+Route::post('/automations/{automation}/toggle', [App\Http\Controllers\AutomationController::class, 'toggle'])->name('automations.toggle');
 
-
-// CAMPAIGN PAGE
-
+// CAMPAIGNS
 Route::get('/campaigns', [CampaignController::class, 'index'])->name('campaigns.index');
 Route::get('/campaigns/create', [CampaignController::class, 'create'])->name('campaigns.create');
 Route::post('/campaigns', [CampaignController::class, 'store'])->name('campaigns.store');
@@ -30,7 +30,8 @@ Route::put('/campaigns/{campaign}', [CampaignController::class, 'update'])->name
 Route::delete('/campaigns/{campaign}', [CampaignController::class, 'destroy'])->name('campaigns.destroy');
 Route::post('/campaigns/{campaign}/duplicate', [CampaignController::class, 'duplicate'])->name('campaigns.duplicate');
 Route::get('/campaigns/{campaign}/view-email', [CampaignController::class, 'viewEmail'])->name('campaigns.view-email');
-
+Route::post('/campaigns/{campaign}/send', [CampaignController::class, 'send'])->name('campaigns.send');
+Route::get('/campaigns/{campaign}/preview', [CampaignController::class, 'preview'])->name('campaigns.send-preview');
 
 // MESSAGE TEMPLATES
 Route::get('/message-temp', [MessageTemplateController::class, 'index'])->name('templates.index');
@@ -40,12 +41,8 @@ Route::get('/template-form/{id}/edit', [MessageTemplateController::class, 'edit'
 Route::put('/template-form/{id}', [MessageTemplateController::class, 'update'])->name('templates.update');
 Route::delete('/template-form/{id}', [MessageTemplateController::class, 'destroy'])->name('templates.destroy');
 
-//TEMPLATE ADDING 
-Route::get('/audience/template-form', [MessageTemplateController::class, 'create'])->name('templates.create');
-
 // AUDIENCE - DASHBOARDS
-Route::get('/audience/dashboards', [AudienceDashboardController::class, 'dashboards'])->name('audience.dashboards');
-
+Route::get('/audience/dashboards', [AudienceDashboardController::class, 'index'])->name('audience.dashboards');
 
 // AUDIENCE - CONTACTS
 Route::get('/audience', [ContactController::class, 'index'])->name('contacts.index');
@@ -55,20 +52,16 @@ Route::delete('/contacts/delete-selected', [ContactController::class, 'deleteSel
 Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contacts.update');
 Route::get('/import-contacts', [ContactController::class, 'showImportForm'])->name('contacts.import.form');
 Route::post('/import-contacts', [ContactController::class, 'import'])->name('contacts.import');
-Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
 Route::get('/contacts/export', [ContactController::class, 'export'])->name('contacts.export');
-Route::post('/import-contacts', [ApiContactImportController::class, 'import'])
-     ->name('contacts.import');
-
 
 // AUDIENCE - INBOX
 Route::get('/audience/inbox', [InboxController::class, 'index'])->name('inbox');
 Route::get('/inbox-settings', [InboxController::class, 'settings'])->name('inbox.settings');
 
 // AUDIENCE - LABELS
-Route::get('audience/add-labels', [LabelController::class, 'index'])->name('labels.index');       // show the labels page
-Route::post('audience/add-labels', [LabelController::class, 'store'])->name('labels.add');         // add a new label
-Route::delete('audience/delete-label/{id}', [LabelController::class, 'destroy'])->name('labels.delete'); // delete a label
+Route::get('audience/add-labels', [LabelController::class, 'index'])->name('labels.index');
+Route::post('audience/add-labels', [LabelController::class, 'store'])->name('labels.add');
+Route::delete('audience/delete-label/{id}', [LabelController::class, 'destroy'])->name('labels.delete');
 
 // AUDIENCE - SOURCES
 Route::get('/add-source', [SourceController::class, 'index'])->name('sources.index');
@@ -81,7 +74,4 @@ Route::post('/tags', [TagController::class, 'store'])->name('tags.store');
 Route::put('/tags/{tag}', [TagController::class, 'update'])->name('tags.update');
 Route::delete('/tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
 Route::post('/tags/bulk-delete', [TagController::class, 'bulkDestroy'])->name('tags.bulk-destroy');
-
-// OPTIONAL AUDIENCE CONTROLLER DASHBOARD
-Route::get('/audience-dashboard', [AudienceController::class, 'index'])->name('audience.dashboard');
-Route::get('/audience/dashboards', [AudienceDashboardController::class, 'index'])->name('dashboard.index');
+Route::get('/tags', [TagController::class, 'index'])->name('tags.index');

@@ -1,66 +1,184 @@
-<<<<<<< HEAD
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SendFlow — Email Marketing Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+An original email marketing application built with Laravel, featuring campaign management, audience segmentation, automation workflows, and real email delivery via SMTP.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Dashboard
+- Live-updating date/time clock in the top bar
+- Dynamic greeting with authenticated user's name
+- Stat cards (Contacts, Subscribers, Campaigns, Templates) with live database counts and dark gradient backgrounds
+- Bar chart + doughnut chart analytics (Sent vs Draft vs Scheduled campaigns)
+- Quick action icon tiles with hover effects
+- Recent campaigns list with status badges
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Campaigns
+- Full CRUD with create, edit, duplicate, and delete
+- Multi-recipient support via **pivot tables** — select individual contacts and/or tag groups
+- Email preview (renders template in an iframe with recipient list sidebar)
+- Send Now dispatches immediately via `SendCampaignJob`
+- Scheduled sending via `campaigns:send-scheduled` Artisan command
+- Tracks `sent_at` timestamp
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Audience
+- Contact management with tags, labels, and source tracking
+- Multi-tag assignment per contact
+- Import/export contacts via CSV
+- Subscriber status tracking
 
-## Learning Laravel
+### Automation Workflows
+- **Trigger types:** Contact Created, Tag Added, Birthday, Date Based
+- **Step actions:** Send Email, Add Tag, Remove Tag
+- Configurable delay (days) between steps
+- Multi-step sequences (e.g., Wait 1d → Send Welcome, Wait 3d → Send Follow-up)
+- Processed every minute via `automations:process` scheduler
+- Full audit log (`automation_logs`) with success/failure tracking
+- Pause/activate toggles on each workflow
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Email Sending
+- **Gmail SMTP** integration with App Password authentication
+- Mailable classes for campaign and automation emails
+- Queueable job dispatching
+- Uses template body as email content with custom subject lines
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Design
+- **Color palette:** Navy (`#1a1a2e`, `#16213e`), Coral (`#e94560`, `#c23152`), Purple (`#533483`), Deep Blue (`#0f3460`)
+- Fully responsive sidebar with SendFlow branding
+- All Mailchimp-copy UI removed (collapsible menus, fake analytics, upsells, etc.)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Database Schema
 
-## Laravel Sponsors
+### Core Tables
+| Table | Purpose |
+|---|---|
+| `contacts` | Audience members with email, name, subscription status |
+| `tags` | Tag labels for segmentation |
+| `labels` | Categorization labels |
+| `sources` | Contact source/origin tracking |
+| `message_templates` | Email templates with name, subject, HTML body |
+| `campaigns` | Campaigns with status (draft/scheduled/sent), type, template |
+| `messages` | Message/Inbox records |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Pivot Tables
+| Table | Purpose |
+|---|---|
+| `contact_tag` | Many-to-many contacts ↔ tags |
+| `campaign_contact` | Many-to-many campaigns ↔ contacts |
+| `campaign_tag` | Many-to-many campaigns ↔ tags |
 
-### Premium Partners
+### Automation Tables
+| Table | Purpose |
+|---|---|
+| `automations` | Workflow definitions (trigger type, status) |
+| `automation_steps` | Ordered steps per workflow (delay, action) |
+| `automation_logs` | Execution logs per step + contact |
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Other
+| Table | Purpose |
+|---|---|
+| `campaigns` (columns) | `send_date`, `sent_at`, `template_id`, `created_by` |
+| `message_templates` (columns) | `subject`, `body`, `name` |
 
-## Contributing
+## Setup
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+cp .env.example .env
+# Configure database credentials in .env
+# Configure MAIL_* for SMTP delivery
 
-## Code of Conduct
+php artisan migrate
+php artisan db:seed --class=SampleDataSeeder
+php artisan serve --port=8001
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### SMTP (Gmail)
+1. Enable **2-factor authentication** on your Google account
+2. Generate an **App Password** at https://myaccount.google.com/apppasswords
+3. Set in `.env`:
+```
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME="your.email@gmail.com"
+MAIL_PASSWORD="your-16-char-app-password"
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="your.email@gmail.com"
+```
 
-## Security Vulnerabilities
+### Scheduler (Required for Automations + Scheduled Campaigns)
+```bash
+php artisan schedule:work
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Or add to crontab:
+```
+* * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
+```
 
-## License
+## Seeded Sample Data
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-=======
-# Email-Marketing
-Email Marketing Software for OJT
->>>>>>> recovered_layout
+Running `php artisan db:seed --class=SampleDataSeeder` creates:
+- **7 tags** (Newsletter, VIP, New Lead, Returning Customer, Test, Trial User, Premium)
+- **4 labels** (Important, Follow Up, Archive, Spam)
+- **1 source** (marketing@example.com)
+- **5 contacts** (Alice, Bob, Carol, Dave, Eve) with various tags
+- **3 templates** (Welcome Email, Monthly Newsletter, Promotional Offer)
+- **3 campaigns** (Welcome Campaign - sent, March Newsletter - draft with tag targeting, Summer Sale - scheduled)
+
+## Artisan Commands
+
+| Command | Schedule | Purpose |
+|---|---|---|
+| `campaigns:send-scheduled` | Every minute | Sends campaigns with `scheduled` status whose `send_date` has passed |
+| `automations:process` | Every minute | Processes active automation triggers and executes pending steps |
+
+## Key Files
+
+| File | Purpose |
+|---|---|
+| `app/Mail/CampaignMail.php` | Mailable for single-contact campaign sends |
+| `app/Mail/CampaignMailForContact.php` | Mailable for automation-triggered sends |
+| `app/Jobs/SendCampaignJob.php` | Queueable job dispatching campaign emails |
+| `app/Console/Commands/SendScheduledCampaigns.php` | Scheduled campaign sender |
+| `app/Console/Commands/ProcessAutomations.php` | Automation workflow processor |
+| `app/Http/Controllers/CampaignController.php` | Campaign CRUD + send + preview + duplicate |
+| `app/Http/Controllers/AutomationController.php` | Automation CRUD with multi-step support |
+| `app/Models/Automation.php` | Automation model with `allRecipients()` helper |
+| `database/seeders/SampleDataSeeder.php` | Sample data for development |
+| `resources/views/dashboard/index.blade.php` | Dashboard with charts, stats, quick actions |
+| `resources/views/automations/` | Automation index, create, edit views |
+
+## Routes
+
+### Campaigns
+- `GET /campaigns` — List all campaigns
+- `GET /campaigns/create` — Create form
+- `POST /campaigns` — Store
+- `GET /campaigns/{id}/edit` — Edit form
+- `PUT /campaigns/{id}` — Update
+- `DELETE /campaigns/{id}` — Delete
+- `POST /campaigns/{id}/send` — Send now
+- `GET /campaigns/{id}/preview` — Email preview
+- `POST /campaigns/{id}/duplicate` — Duplicate
+- `GET /campaigns/{id}/view-email` — View rendered email
+
+### Automations
+- `GET /automations` — List all workflows
+- `GET /automations/create` — Create form
+- `POST /automations` — Store
+- `GET /automations/{id}/edit` — Edit form
+- `PUT /automations/{id}` — Update
+- `DELETE /automations/{id}` — Delete
+- `POST /automations/{id}/toggle` — Pause/activate
+
+### Audience
+- `GET /audience` — Contacts list
+- `GET /add-contact` — Create contact
+- `GET /import-contacts` — CSV import
+- `GET /audience/dashboards` — Audience dashboard
+- `GET /audience/audience-tags` — Tag management
+- `GET /audience/inbox` — Inbox
+
+### Templates
+- `GET /message-temp` — List templates
+- `GET /template-form` — Create/edit template

@@ -16,5 +16,11 @@ class Tag extends Model
     return $this->belongsToMany(Contact::class, 'contact_tag', 'tag_id', 'contact_id');
 }
 
+public function campaigns()
+{
+    return $this->belongsToMany(Campaign::class, 'campaign_tag')
+        ->withTimestamps();
+}
+
 
 }
