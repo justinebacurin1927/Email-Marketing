@@ -24,6 +24,18 @@ class LabelController extends Controller
         return redirect()->route('labels.index')->with('success', 'Label added successfully');
     }
 
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $label = Label::findOrFail($id);
+        $label->update(['name' => $request->name]);
+
+        return redirect()->route('labels.index')->with('success', 'Label renamed successfully');
+    }
+
     public function destroy($id)
     {
         $label = Label::findOrFail($id);

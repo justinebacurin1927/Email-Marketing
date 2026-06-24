@@ -14,8 +14,10 @@ class ContactController extends Controller
 {
     $contacts = Contact::with('tags')->orderBy('created_at', 'desc')->paginate(10);
     $tags = Tag::all();
+    $totalContacts = Contact::count();
+    $totalSubscribers = Contact::where('subscribed', true)->count();
 
-    return view('audience.audience', compact('contacts', 'tags'));
+    return view('audience.audience', compact('contacts', 'tags', 'totalContacts', 'totalSubscribers'));
 }
 
     public function create()

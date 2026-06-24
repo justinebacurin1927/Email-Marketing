@@ -7,8 +7,9 @@ use App\Http\Controllers\InboxController;
 use App\Http\Controllers\SourceController;
 use App\Http\Controllers\MessageTemplateController;
 use App\Http\Controllers\LabelController;
-use App\Http\Controllers\AudienceDashboardController;
+
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\ProfileController;
 
 // DASHBOARD & PAGES
 Route::get('/', fn() => view('dashboard.index'));
@@ -41,8 +42,8 @@ Route::get('/template-form/{id}/edit', [MessageTemplateController::class, 'edit'
 Route::put('/template-form/{id}', [MessageTemplateController::class, 'update'])->name('templates.update');
 Route::delete('/template-form/{id}', [MessageTemplateController::class, 'destroy'])->name('templates.destroy');
 
-// AUDIENCE - DASHBOARDS
-Route::get('/audience/dashboards', [AudienceDashboardController::class, 'index'])->name('audience.dashboards');
+// AUDIENCE - DASHBOARDS (redirected to main dashboard)
+Route::get('/audience/dashboards', fn() => redirect('/'))->name('audience.dashboards');
 
 // AUDIENCE - CONTACTS
 Route::get('/audience', [ContactController::class, 'index'])->name('contacts.index');
@@ -62,6 +63,7 @@ Route::get('/inbox-settings', [InboxController::class, 'settings'])->name('inbox
 Route::get('audience/add-labels', [LabelController::class, 'index'])->name('labels.index');
 Route::post('audience/add-labels', [LabelController::class, 'store'])->name('labels.add');
 Route::delete('audience/delete-label/{id}', [LabelController::class, 'destroy'])->name('labels.delete');
+Route::put('audience/rename-label/{id}', [LabelController::class, 'update'])->name('labels.update');
 
 // AUDIENCE - SOURCES
 Route::get('/add-source', [SourceController::class, 'index'])->name('sources.index');
@@ -75,3 +77,8 @@ Route::put('/tags/{tag}', [TagController::class, 'update'])->name('tags.update')
 Route::delete('/tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
 Route::post('/tags/bulk-delete', [TagController::class, 'bulkDestroy'])->name('tags.bulk-destroy');
 Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
+
+// PROFILE
+Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::put('/profile/password', [ProfileController::class, 'password'])->name('profile.password');

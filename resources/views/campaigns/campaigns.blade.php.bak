@@ -1,0 +1,576 @@
+<x-layouts.app>
+
+<div class="campaign-layout d-flex" style="height: calc(100vh - 3.5rem); overflow: hidden;">
+
+  {{-- Center Queue Column --}}
+  <div class="center-queue d-flex flex-column border-end" id="center-queue" style="width: 360px; min-width: 320px; background: #f8f9fa;">
+
+    <div class="p-3 border-bottom bg-white">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="fw-bold mb-0" style="color: #1a1a2e;">Campaigns</h5>
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-outline-secondary border-0" title="Sort"><i class="bi bi-arrow-up-down"></i></button>
+          <button class="btn btn-sm btn-outline-secondary border-0" title="View options"><i class="bi bi-list"></i></button>
+        </div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-sm filter-pill active-filter-pill" data-filter="all">All</button>
+        <button class="btn btn-sm filter-pill" data-filter="draft">Draft</button>
+        <button class="btn btn-sm filter-pill" data-filter="sent">Sent</button>
+        <button class="btn btn-sm filter-pill" data-filter="scheduled">Scheduled</button>
+      </div>
+      <input type="text" id="campaign-search" class="form-control form-control-sm mt-2" placeholder="Search campaigns..." style="background: #f1f3f5; border: none; border-radius: 8px;">
+    </div>
+
+    <div class="overflow-auto flex-grow-1" id="campaign-list">
+      @foreach($campaigns as $campaign)
+      @php
+        $recipientList = collect();
+        foreach ($campaign->contacts as $rc) { $recipientList->push($rc->email); }
+        foreach ($campaign->tags as $rt) { $recipientList->push('[' . $rt->name . ']'); }
+        $recipientPreview = $recipientList->isNotEmpty()
+          ? $recipientList->take(2)->implode(', ') . ($recipientList->count() > 2 ? '...' : '')
+          : ($campaign->contact->email ?? 'No recipients');
+      @endphp
+      <div class="campaign-card p-3 border-bottom {{ $loop->first ? 'selected-card' : '' }}"
+           data-id="{{ $campaign->id }}"
+           data-status="{{ $campaign->status }}"
+           data-name="{{ strtolower($campaign->name) }}"
+           data-type="{{ $campaign->type ?? 'regular' }}"
+           data-updated="{{ $campaign->updated_at }}">
+         <div class="fw-bold mb-1" style="color: #1a1a2e; font-size: 1rem;">{{ $campaign->name }}</div>
+        <div class="text-muted mb-1" style="font-size: 0.85rem;">{{ ucfirst($campaign->type ?? 'Regular email') }}</div>
+        <div class="text-muted mb-2" style="font-size: 0.8rem;">Last edited {{ $campaign->updated_at->format('D, M d, h:i A') }}</div>
+        <div class="d-flex align-items-center gap-2">
+          @if($campaign->status == 'draft')
+            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">Draft</span>
+          @elseif($campaign->status == 'sent')
+            <span class="badge bg-success" style="font-size: 0.75rem;">Sent</span>
+          @elseif($campaign->status == 'scheduled')
+            <span class="badge bg-warning text-dark border" style="font-size: 0.75rem;">Scheduled</span>
+          @endif
+          @foreach($campaign->tags->take(2) as $tag)
+            <span class="badge" style="background: rgba(233,69,96,0.08); color: #e94560; font-size: 0.7rem;">{{ $tag->name }}</span>
+          @endforeach
+          <span class="text-muted ms-auto" style="font-size: 0.75rem;">{{ $recipientPreview }}</span>
+        </div>
+      </div>
+      @endforeach
+    </div>
+  </div>
+
+  {{-- Right Canvas --}}
+  <div class="right-canvas d-flex flex-column bg-white" id="right-canvas" style="flex: 1 1 0%; min-width: 0; transition: flex 0.3s ease, opacity 0.3s ease;">
+    @if($campaigns->isNotEmpty())
+    @php $selected = $campaigns->first(); @endphp
+
+    <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom" style="min-height: 60px;">
+      <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+        <button class="btn btn-sm btn-outline-secondary border-0 d-none d-xl-inline-flex" id="panel-toggle" title="Toggle panel" style="padding: 0.15rem 0.3rem;"><i class="bi bi-chevron-left"></i></button>
+        <h5 class="fw-bold mb-0 text-truncate" id="detail-title" style="color: #1a1a2e; max-width: 400px;">{{ $selected->name }}</h5>
+        <span id="detail-status-badge">
+          @if($selected->status == 'draft')
+            <span class="badge bg-light text-dark border">Draft</span>
+          @elseif($selected->status == 'sent')
+            <span class="badge bg-success">Sent</span>
+          @elseif($selected->status == 'scheduled')
+            <span class="badge bg-warning text-dark border">Scheduled</span>
+          @endif
+        </span>
+        <div id="detail-audience" style="display: none;"></div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary border-0 d-xl-none" id="panel-close-mobile" title="Close panel" style="font-size: 1.1rem;">✕</button>
+        <form action="{{ route('campaigns.send', $selected->id) }}" method="POST" style="display:inline;" id="detail-send-form">
+          @csrf
+          <button type="submit" class="btn btn-sm d-flex align-items-center gap-1 text-white" id="detail-send-btn" style="background: #e94560; border: none; border-radius: 8px; padding: 0.35rem 0.85rem; {{ $selected->status === 'sent' ? 'opacity: 0.5; pointer-events: none;' : '' }}">
+            <span>📤</span> Send
+          </button>
+        </form>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary border-0" data-bs-toggle="dropdown" style="font-size: 1.3rem; line-height: 1;">⋯</button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" id="detail-edit-link" href="{{ route('campaigns.edit', $selected->id) }}">✏️ Edit campaign</a></li>
+            <li><a class="dropdown-item" id="detail-preview-link" href="{{ route('campaigns.send-preview', $selected->id) }}">👁️ Preview Email</a></li>
+            <li><a class="dropdown-item" id="detail-view-link" href="{{ route('campaigns.view-email', $selected->id) }}">📄 View Email</a></li>
+            <li><a class="dropdown-item duplicate-campaign" href="#" data-id="{{ $selected->id }}">📋 Duplicate</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger delete-campaign" href="#" data-id="{{ $selected->id }}">🗑️ Delete</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-4 px-4 py-2 border-bottom" style="background: #fafafa; font-size: 0.9rem;">
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span>👤</span>
+        <span><strong id="detail-creator">{{ $selected->created_by ?? 'Admin' }}</strong></span>
+      </div>
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span>📅</span>
+        <span>Created <span id="detail-created">{{ $selected->created_at->format('M d, Y') }}</span></span>
+      </div>
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span>🔄</span>
+        <span>Updated <span id="detail-updated">{{ $selected->updated_at->diffForHumans() }}</span></span>
+      </div>
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span>👥</span>
+        <span><span id="detail-recipients">{{ $selected->contacts->count() + $selected->tags->sum(fn($t) => $t->contacts->count()) }}</span> recipients</span>
+      </div>
+      <div class="d-flex align-items-center gap-2 text-muted" id="detail-template-wrap" style="display: none;">
+        <span>📄</span>
+        <span>Template: <span id="detail-template">{{ $selected->template->name ?? 'None' }}</span></span>
+      </div>
+    </div>
+
+    <div class="overflow-auto flex-grow-1 px-4 py-3" id="detail-scroll">
+      <div class="border rounded" style="border-style: dashed !important; border-color: #e94560 !important; background: #fff5f5;">
+        <div class="px-3 py-2 border-bottom d-flex align-items-center justify-content-between" style="background: #fff0f0;">
+          <div class="d-flex align-items-center gap-2">
+            <span>🤖</span>
+            <span class="fw-semibold" style="font-size: 0.9rem;">AI Suggested Draft</span>
+            <span class="badge bg-light text-muted border small">Beta</span>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-danger ai-takeover" style="border-radius: 6px;">Take Over</button>
+            <button class="btn btn-sm btn-outline-secondary ai-discard" style="border-radius: 6px;">Discard</button>
+          </div>
+        </div>
+        <div class="p-3">
+          <div class="mb-2 fw-bold" style="color: #e94560; font-size: 0.95rem;" id="ai-subject">Subject: {{ $selected->name }}</div>
+          <div class="text-muted lh-lg" id="ai-body" style="font-size: 0.9rem;">
+            <p>Hi {{ $selected->contact->name ?? 'there' }},</p>
+            <p>We're excited to share our latest updates with you. This AI-generated draft was created based on your campaign "{{ $selected->name }}" to help you get started quickly.</p>
+            <p>Feel free to edit this content or use our template to craft the perfect message for your audience.</p>
+            <p>Best regards,<br>The SendFlow Team</p>
+          </div>
+          <div class="d-flex gap-3 mt-2 pt-2 border-top" style="font-size: 0.85rem;">
+            <a href="#" class="text-decoration-none text-muted fw-medium">📝 Edit</a>
+            <a href="#" class="text-decoration-none text-muted fw-medium">🔄 Regenerate</a>
+            <a href="#" class="text-decoration-none text-muted fw-medium">📋 Copy</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-column mt-4" style="min-height: 200px;">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="fw-semibold text-muted" style="font-size: 0.9rem;">💬 Comments</span>
+          <span class="text-muted" id="comment-count" style="font-size: 0.85rem;">0 comments</span>
+        </div>
+        <div class="flex-grow-1 mb-2" id="comments-container" style="max-height: 300px; overflow-y: auto;">
+        </div>
+        <div class="d-flex gap-2">
+          <input type="text" id="comment-input" class="form-control form-control-sm" placeholder="Write a comment..." style="background: #f1f3f5; border: none; border-radius: 8px;">
+          <button class="btn btn-sm d-flex align-items-center justify-content-center text-white" id="comment-send" style="background: #e94560; border: none; border-radius: 8px; width: 34px; height: 34px;">➤</button>
+        </div>
+      </div>
+    </div>
+
+    @else
+    <div class="d-flex align-items-center justify-content-center flex-grow-1 text-muted">
+      <div class="text-center">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📨</div>
+        <p class="fw-bold" style="font-size: 1.2rem;">No campaigns yet</p>
+        <a href="{{ route('campaigns.create') }}" class="btn btn-sm" style="background: #e94560; color: white; border-radius: 8px;">Create your first campaign</a>
+      </div>
+    </div>
+    @endif
+  </div>
+
+  {{-- Right Rail --}}
+  <div class="right-rail d-flex flex-column align-items-center py-3 gap-3" style="width: 44px; min-width: 44px; background: #1a1a2e;">
+    <a href="#" class="text-decoration-none rail-icon" title="Notifications" style="color: #8899aa; font-size: 1.1rem;">🔔</a>
+    <a href="#" class="text-decoration-none rail-icon" title="Help" style="color: #8899aa; font-size: 1.1rem;">❓</a>
+    <a href="#" class="text-decoration-none rail-icon" title="Settings" style="color: #8899aa; font-size: 1.1rem;">⚙️</a>
+    <a href="#" class="text-decoration-none rail-icon mt-auto" title="Expand" style="color: #8899aa; font-size: 1.1rem;">⛶</a>
+  </div>
+</div>
+
+<style>
+  .campaign-card {
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fff;
+  }
+  .campaign-card:hover {
+    background: #f1f3f5;
+  }
+  .campaign-card.selected-card {
+    background: #fff0f0;
+    border-left: 3px solid #e94560;
+    padding-left: calc(1rem - 3px) !important;
+  }
+  .filter-pill {
+    background: transparent;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    transition: all 0.15s;
+  }
+  .filter-pill:hover {
+    background: #f1f3f5;
+  }
+  .filter-pill.active-filter-pill {
+    background: #e94560;
+    border-color: #e94560;
+    color: #fff;
+  }
+  .rail-icon:hover {
+    color: #e94560 !important;
+  }
+  #detail-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  #detail-scroll::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 3px;
+  }
+  #campaign-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  #campaign-list::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 3px;
+  }
+  .comment-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f3f5;
+  }
+  .comment-item:last-child {
+    border-bottom: none;
+  }
+  .panel-collapsed #right-canvas {
+    flex: 0 0 0 !important;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .panel-collapsed #center-queue {
+    flex: 1 1 0%;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+</style>
+
+<script>
+  @php
+    $campaignsJs = $campaigns->map(function($c) {
+      return [
+        'id' => $c->id,
+        'name' => $c->name,
+        'type' => ucfirst($c->type ?? 'Regular email'),
+        'status' => $c->status,
+        'updated_at' => $c->updated_at->format('D, M d, h:i A'),
+        'updated_diff' => $c->updated_at->diffForHumans(),
+        'created_at' => $c->created_at->format('M d, Y'),
+        'created_by' => $c->created_by ?? 'Admin',
+        'tags' => $c->tags->pluck('name')->toArray(),
+        'recipients_count' => $c->contacts->count() + $c->tags->sum(fn($t) => $t->contacts->count()),
+        'edit_url' => route('campaigns.edit', $c->id),
+        'preview_url' => route('campaigns.send-preview', $c->id),
+        'view_email_url' => route('campaigns.view-email', $c->id),
+        'send_url' => route('campaigns.send', $c->id),
+        'contact_name' => $c->contact->name ?? null,
+      ];
+    });
+  @endphp
+  document.addEventListener('DOMContentLoaded', function() {
+    const campaignsData = @json($campaignsJs);
+
+    let currentId = campaignsData.length > 0 ? campaignsData[0].id : null;
+
+    // ---------- Comments ----------
+    let comments = [];
+    const commentsContainer = document.getElementById('comments-container');
+    const commentInput = document.getElementById('comment-input');
+    const commentSend = document.getElementById('comment-send');
+    const commentCount = document.getElementById('comment-count');
+
+    function renderComments() {
+      if (!commentsContainer) return;
+      if (comments.length === 0) {
+        commentsContainer.innerHTML = '<div class="text-muted text-center py-4" style="font-size: 0.9rem;">No comments yet. Start the conversation!</div>';
+        return;
+      }
+      commentsContainer.innerHTML = comments.map(c =>
+        `<div class="comment-item d-flex gap-2">
+          <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+            style="width: 32px; height: 32px; background: #e94560; font-size: 0.75rem; flex-shrink: 0;">
+            ${c.avatar}
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2">
+              <strong style="font-size: 0.9rem;">${c.author}</strong>
+              <span class="text-muted" style="font-size: 0.75rem;">${c.time}</span>
+            </div>
+            <div class="text-muted" style="font-size: 0.85rem;">${c.text}</div>
+          </div>
+        </div>`
+      ).join('');
+    }
+
+    if (commentSend) {
+      commentSend.addEventListener('click', function() {
+        const text = commentInput.value.trim();
+        if (!text) return;
+        const user = '{{ auth()->user()->name ?? 'User' }}';
+        const initial = '{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}';
+        comments.push({
+          author: user,
+          avatar: initial,
+          text: text,
+          time: 'Just now'
+        });
+        commentInput.value = '';
+        renderComments();
+        commentCount.textContent = comments.length + ' comment' + (comments.length !== 1 ? 's' : '');
+        commentsContainer.scrollTop = commentsContainer.scrollHeight;
+      });
+      commentInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') commentSend.click();
+      });
+    }
+
+    // ---------- Panel Collapse Toggle ----------
+    const layout = document.querySelector('.campaign-layout');
+    const toggleBtn = document.getElementById('panel-toggle');
+    const closeBtn = document.getElementById('panel-close-mobile');
+
+    function isPanelCollapsed() {
+      return layout.classList.contains('panel-collapsed');
+    }
+
+    function expandPanel() {
+      layout.classList.remove('panel-collapsed');
+      if (toggleBtn) toggleBtn.textContent = '◀';
+    }
+
+    function collapsePanel() {
+      layout.classList.add('panel-collapsed');
+      if (toggleBtn) toggleBtn.textContent = '▶';
+    }
+
+    function togglePanel() {
+      if (isPanelCollapsed()) {
+        expandPanel();
+      } else {
+        collapsePanel();
+      }
+    }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', togglePanel);
+    if (closeBtn) closeBtn.addEventListener('click', collapsePanel);
+
+    // ---------- Campaign Selection ----------
+    function selectCampaign(id, toggle) {
+      const wasCollapsed = isPanelCollapsed();
+      const wasSameCard = currentId === id;
+
+      if (wasSameCard && toggle !== false) {
+        togglePanel();
+        return;
+      }
+
+      if (wasCollapsed) expandPanel();
+
+      currentId = id;
+      document.querySelectorAll('.campaign-card').forEach(c => {
+        c.classList.toggle('selected-card', parseInt(c.dataset.id) === id);
+      });
+
+      const data = campaignsData.find(c => c.id === id);
+      if (!data) return;
+
+      const statusBadge = {
+        draft: '<span class="badge bg-light text-dark border">Draft</span>',
+        sent: '<span class="badge bg-success">Sent</span>',
+        scheduled: '<span class="badge bg-warning text-dark border">Scheduled</span>',
+      };
+
+      document.getElementById('detail-title').textContent = data.name;
+      document.getElementById('detail-status-badge').innerHTML = statusBadge[data.status] || '';
+      document.getElementById('detail-creator').textContent = data.created_by;
+      document.getElementById('detail-created').textContent = data.created_at;
+      document.getElementById('detail-updated').textContent = data.updated_diff;
+      document.getElementById('detail-recipients').textContent = data.recipients_count;
+      document.getElementById('detail-edit-link').href = data.edit_url;
+      document.getElementById('detail-preview-link').href = data.preview_url;
+      document.getElementById('detail-view-link').href = data.view_email_url;
+      document.getElementById('detail-send-form').action = data.send_url;
+
+      const sendBtn = document.getElementById('detail-send-btn');
+      if (data.status === 'sent') {
+        sendBtn.style.opacity = '0.5';
+        sendBtn.style.pointerEvents = 'none';
+      } else {
+        sendBtn.style.opacity = '1';
+        sendBtn.style.pointerEvents = 'auto';
+      }
+
+      document.querySelectorAll('.duplicate-campaign').forEach(el => el.dataset.id = id);
+      document.querySelectorAll('.delete-campaign').forEach(el => el.dataset.id = id);
+
+      const aiSubject = document.getElementById('ai-subject');
+      if (aiSubject) aiSubject.textContent = 'Subject: ' + data.name;
+
+      const aiBody = document.getElementById('ai-body');
+      if (aiBody) {
+        const contactName = data.contact_name || 'there';
+        aiBody.innerHTML =
+          `<p>Hi ${contactName},</p>
+          <p>We're excited to share our latest updates with you. This AI-generated draft was created based on your campaign "${data.name}" to help you get started quickly.</p>
+          <p>Feel free to edit this content or use our template to craft the perfect message for your audience.</p>
+          <p>Best regards,<br>The SendFlow Team</p>`;
+      }
+    }
+
+    document.querySelectorAll('.campaign-card').forEach(card => {
+      card.addEventListener('click', function() {
+        selectCampaign(parseInt(this.dataset.id), true);
+      });
+    });
+
+    // ---------- Filter Pills ----------
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', function() {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active-filter-pill'));
+        this.classList.add('active-filter-pill');
+
+        const filter = this.dataset.filter;
+        document.querySelectorAll('.campaign-card').forEach(card => {
+          if (filter === 'all' || card.dataset.status === filter) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // ---------- Sidebar Status Filters ----------
+    document.querySelectorAll('.filter-status').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.filter-status').forEach(l => l.classList.remove('active-filter'));
+        this.classList.add('active-filter');
+
+        const filter = this.dataset.status;
+        document.querySelectorAll('.filter-pill').forEach(p => {
+          p.classList.toggle('active-filter-pill', p.dataset.filter === filter);
+        });
+
+        document.querySelectorAll('.campaign-card').forEach(card => {
+          if (filter === 'all' || card.dataset.status === filter) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // ---------- Search ----------
+    const searchInput = document.getElementById('campaign-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('.campaign-card').forEach(card => {
+          const name = card.dataset.name;
+          if (name.includes(query)) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // ---------- AI Draft Actions ----------
+    document.querySelectorAll('.ai-takeover').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const container = this.closest('.border.rounded');
+        if (container) {
+          container.style.borderStyle = 'solid !important';
+          container.style.borderColor = '#e94560';
+          container.style.background = '#fff';
+          const header = container.querySelector('.border-bottom');
+          if (header) header.style.background = '#fff';
+          this.textContent = '✓ Taken Over';
+          this.classList.remove('btn-outline-danger');
+          this.classList.add('btn-danger');
+          this.disabled = true;
+          const discardBtn = container.querySelector('.ai-discard');
+          if (discardBtn) discardBtn.style.display = 'none';
+        }
+      });
+    });
+
+    document.querySelectorAll('.ai-discard').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const container = this.closest('.border.rounded');
+        if (container) {
+          container.style.display = 'none';
+        }
+      });
+    });
+
+    // ---------- Duplicate ----------
+    document.querySelectorAll('.duplicate-campaign').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const id = this.dataset.id;
+        if (!confirm('Duplicate this campaign?')) return;
+        try {
+          const response = await fetch(`/campaigns/${id}/duplicate`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+          });
+          const data = await response.json();
+          if (response.ok) {
+            alert('Campaign duplicated successfully.');
+            location.reload();
+          } else {
+            alert('Failed: ' + (data.error ?? 'Unknown error'));
+          }
+        } catch (error) {
+          alert('Error duplicating campaign.');
+        }
+      });
+    });
+
+    // ---------- Delete ----------
+    document.querySelectorAll('.delete-campaign').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const id = this.dataset.id;
+        if (!confirm('Delete this campaign?')) return;
+        try {
+          const response = await fetch(`/campaigns/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+          });
+          if (response.ok) {
+            const card = document.querySelector(`.campaign-card[data-id="${id}"]`);
+            if (card) card.remove();
+            alert('Campaign deleted successfully.');
+            const remaining = document.querySelectorAll('.campaign-card');
+            if (remaining.length > 0) {
+              selectCampaign(parseInt(remaining[0].dataset.id));
+            } else {
+              location.reload();
+            }
+          } else {
+            alert('Failed to delete campaign.');
+          }
+        } catch (error) {
+          alert('Error deleting campaign.');
+        }
+      });
+    });
+  });
+</script>
+
+</x-layouts.app>

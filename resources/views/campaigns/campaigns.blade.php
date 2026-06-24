@@ -1,465 +1,577 @@
 <x-layouts.app>
 
-  <div class="px-4 py-4 mt-5">
-    <!-- HEADER -->
-<header class="d-flex justify-content-between align-items-center mb-4 sticky-section">
-  <div>
-    <h1 class="h4 fw-bold text-dark mb-1">All campaigns</h1>
-    <p class="text-secondary small mb-0">Manage and track your email campaigns</p>
-  </div>
-  <div class="d-flex align-items-center gap-2">
-    <a href="{{ route('campaigns.index') }}" class="btn btn-outline-secondary">View analytics</a>
-    <a href="{{ route('campaigns.create') }}" class="btn btn-primary">Create</a>
-  </div>
-</header>
+<div class="campaign-layout d-flex" style="height: calc(100vh - 3.5rem); overflow: hidden;">
 
-    <!-- CARD -->
-    <section class="bg-white border rounded p-3 mb-4 shadow-sm">
-      <!-- NAV TABS -->
-      <ul class="nav nav-tabs mb-3">
-        <li class="nav-item">
-          <a class="nav-link active" id="list-tab" href="#">List</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="calendar-tab" href="#">Calendar</a>
-        </li>
-      </ul>
+  {{-- Center Queue Column --}}
+  <div class="center-queue d-flex flex-column border-end" id="center-queue" style="width: 360px; min-width: 320px; background: #f8f9fa;">
 
-      <!-- LIST VIEW -->
-        <div id="list-content">
-            <div class="mb-3 d-flex align-items-center flex-wrap gap-3">
-    <input id="campaign-search" type="text" class="form-control" placeholder="Search campaigns" style="max-width: 400px;">
-    <div class="text-muted small">Sort by: 
-        <a href="#" class="text-decoration-none sort-link" data-sort="updated" data-order="desc">Date edited</a>
-        | <a href="#" class="text-decoration-none sort-link" data-sort="name" data-order="asc">Name</a>
+    <div class="p-3 border-bottom bg-white">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="fw-bold mb-0" style="color: #1a1a2e;">Campaigns</h5>
+        <div class="d-flex gap-1">
+          <a href="{{ route('campaigns.create') }}" class="btn btn-sm d-flex align-items-center gap-1 text-white fw-medium" style="background: #e94560; border: none; border-radius: 8px; padding: 0.3rem 0.8rem; font-size: 0.8rem; text-decoration: none;">
+            <i class="bi bi-plus-lg"></i> Create
+          </a>
+        </div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-sm filter-pill active-filter-pill" data-filter="all">All</button>
+        <button class="btn btn-sm filter-pill" data-filter="draft">Draft</button>
+        <button class="btn btn-sm filter-pill" data-filter="sent">Sent</button>
+        <button class="btn btn-sm filter-pill" data-filter="scheduled">Scheduled</button>
+      </div>
+      <input type="text" id="campaign-search" class="form-control form-control-sm mt-2" placeholder="Search campaigns..." style="background: #f1f3f5; border: none; border-radius: 8px;">
     </div>
 
-        </div>
-
-        <div class="mb-3 d-flex flex-wrap gap-3">
-          <div>Type:
-            <select class="form-select form-select-sm d-inline w-auto">
-              <option>All</option>
-              <option>Regular email</option>
-              <option>Automation</option>
-            </select>
-          </div>
-          <div>Status:
-            <select class="form-select form-select-sm d-inline w-auto">
-              <option>All</option>
-              <option>Draft</option>
-              <option>Sent</option>
-            </select>
-          </div>
-          <div>Folder:
-            <select class="form-select form-select-sm d-inline w-auto">
-              <option>All</option>
-            </select>
-          </div>
-          <div>Date:
-            <select class="form-select form-select-sm d-inline w-auto">
-              <option>All</option>
-              <option>This week</option>
-              <option>This month</option>
-            </select>
-          </div>
-        </div>
-
-        <table class="table align-middle">
-          <thead>
-            <tr>
-              <!-- Top checkbox in table header -->
-              <th><input type="checkbox" id="select-all"></th>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Audience</th>
-              <th>Sent At</th>
-              <th class="text-end">Actions</th>
-            </tr>
-          </thead>
-<tbody>
-@foreach($campaigns as $campaign)
-<tr id="campaign-row-{{ $campaign->id }}" 
-    data-name="{{ strtolower($campaign->name) }}" 
-    data-status="{{ $campaign->status }}" 
-    data-updated="{{ $campaign->updated_at }}">
-    <td><input type="checkbox"></td>
-    <td>
-        <div class="fw-semibold text-primary">{{ $campaign->name }}</div>
-        <div class="text-muted small">{{ ucfirst($campaign->type) ?? 'Regular email' }}</div>
-        <div class="text-muted small">Last edited {{ $campaign->updated_at->format('D, M d, h:i A') }} by {{ $campaign->created_by ?? 'Admin' }}</div>
-    </td>
-<td>
-    @if($campaign->status == 'draft')
-        <span class="badge bg-light text-dark border">Draft</span>
-    @elseif($campaign->status == 'sent')
-        <span class="badge bg-success">Sent</span>
-    @elseif($campaign->status == 'scheduled')
-        <span class="badge bg-warning text-dark border">Scheduled</span>
-    @endif
-</td>
-    <td>
+    <div class="overflow-auto flex-grow-1" id="campaign-list">
+      @foreach($campaigns as $campaign)
       @php
         $recipientList = collect();
         foreach ($campaign->contacts as $rc) { $recipientList->push($rc->email); }
         foreach ($campaign->tags as $rt) { $recipientList->push('[' . $rt->name . ']'); }
+        $recipientPreview = $recipientList->isNotEmpty()
+          ? $recipientList->take(2)->implode(', ') . ($recipientList->count() > 2 ? '...' : '')
+          : ($campaign->contact->email ?? 'No recipients');
       @endphp
-      @if($recipientList->isNotEmpty())
-        <span class="text-muted small">{{ $recipientList->take(3)->implode(', ') }}{{ $recipientList->count() > 3 ? '...' : '' }}</span>
-      @else
-        <span class="text-muted small">{{ $campaign->contact->email ?? '-' }}</span>
-      @endif
-    </td>
-    <td>{{ $campaign->sent_at ? \Carbon\Carbon::parse($campaign->sent_at)->format('M d, h:i A') : '-' }}</td>
-    <td class="text-end">
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Actions</button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                @if($campaign->status !== 'sent')
-                <li>
-                    <form action="{{ route('campaigns.send', $campaign->id) }}" method="POST" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="dropdown-item text-success fw-semibold">Send Now</button>
-                    </form>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                @endif
-                @if($campaign->status == 'draft' || $campaign->status == 'scheduled')
-                <li>
-                    <a class="dropdown-item" href="{{ route('campaigns.send-preview', $campaign->id) }}">Preview Email</a>
-                </li>
-                @endif
-                <li><a class="dropdown-item" href="{{ route('campaigns.view-email', $campaign->id) }}">View Email</a></li>
-                <li><a class="dropdown-item" href="{{ route('campaigns.edit', $campaign->id) }}">Edit campaign</a></li>
-                <li><a class="dropdown-item duplicate-campaign" href="#" data-id="{{ $campaign->id }}">Duplicate</a></li>
-                <li><a class="dropdown-item text-danger delete-campaign" href="#" data-id="{{ $campaign->id }}">Delete</a></li>
-            </ul>
+      <div class="campaign-card p-3 border-bottom {{ $loop->first ? 'selected-card' : '' }}"
+           data-id="{{ $campaign->id }}"
+           data-status="{{ $campaign->status }}"
+           data-name="{{ strtolower($campaign->name) }}"
+           data-type="{{ $campaign->type ?? 'regular' }}"
+           data-updated="{{ $campaign->updated_at }}">
+         <div class="fw-bold mb-1" style="color: #1a1a2e; font-size: 1rem;">{{ $campaign->name }}</div>
+        <div class="text-muted mb-1" style="font-size: 0.85rem;">{{ ucfirst($campaign->type ?? 'Regular email') }}</div>
+        <div class="text-muted mb-2" style="font-size: 0.8rem;">Last edited {{ $campaign->updated_at->format('D, M d, h:i A') }}</div>
+        <div class="d-flex align-items-center gap-2">
+          @if($campaign->status == 'draft')
+            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">Draft</span>
+          @elseif($campaign->status == 'sent')
+            <span class="badge bg-success" style="font-size: 0.75rem;">Sent</span>
+          @elseif($campaign->status == 'scheduled')
+            <span class="badge bg-warning text-dark border" style="font-size: 0.75rem;">Scheduled</span>
+          @endif
+          @foreach($campaign->tags->take(2) as $tag)
+            <span class="badge" style="background: rgba(233,69,96,0.08); color: #e94560; font-size: 0.7rem;">{{ $tag->name }}</span>
+          @endforeach
+          <span class="text-muted ms-auto" style="font-size: 0.75rem;">{{ $recipientPreview }}</span>
         </div>
-    </td>
-</tr>
-@endforeach
-</tbody>
-
-        </table>
       </div>
-
-      <!-- CALENDAR VIEW -->
-      <div id="calendar-content" style="display: none;">
-        <div class="mb-3 d-flex flex-wrap gap-3 align-items-center">
-          <div>Type:
-            <select id="filter-type" class="form-select form-select-sm d-inline w-auto">
-              <option value="all">All</option>
-              <option value="regular">Regular email</option>
-              <option value="automation">Automation</option>
-            </select>
-          </div>
-          <div>Status:
-            <select id="filter-status" class="form-select form-select-sm d-inline w-auto">
-              <option value="all">All</option>
-              <option value="draft">Draft</option>
-              <option value="sent">Sent</option>
-            </select>
-          </div>
-          <div>Holiday:
-            <select id="filter-holiday" class="form-select form-select-sm d-inline w-auto">
-              <option value="none">None</option>
-              <option value="us">US Holidays</option>
-            </select>
-          </div>
-          <div class="ms-auto d-flex align-items-center gap-2">
-            <label class="small mb-0">Send day optimization</label>
-            <div class="form-check form-switch mb-0">
-              <input class="form-check-input" type="checkbox" checked>
-            </div>
-          </div>
-        </div>
-
-        <div id="calendar" style="min-height: 600px; width: 100%; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.375rem;"></div>
-      </div>
-    </section>
+      @endforeach
+    </div>
   </div>
 
-  <!-- FullCalendar -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/main.min.css" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/main.min.js"></script>
-  
-  <style>
-  .sticky-section {
-    position: sticky;
-    top: 70px;
-    background-color: #ffffff;
-    z-index: 100;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-  section.bg-white {
-    margin-top: 0;
-  }
-  #calendar {
-    width: 100%;
-    min-height: 600px;
-  }
-  .fc {
-    font-family: inherit;
-  }
-  .fc-toolbar {
-    margin-bottom: 1rem;
-  }
-  .fc-event {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 2px 4px;
-    font-size: 0.85em;
-  }
-  </style>
+  {{-- Right Canvas --}}
+  <div class="right-canvas d-flex flex-column bg-white" id="right-canvas" style="flex: 1 1 0%; min-width: 0; transition: flex 0.3s ease, opacity 0.3s ease;">
+    @if($campaigns->isNotEmpty())
+    @php $selected = $campaigns->first(); @endphp
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const listTab = document.getElementById('list-tab');
-      const calTab = document.getElementById('calendar-tab');
-      const listContent = document.getElementById('list-content');
-      const calContent = document.getElementById('calendar-content');
-      const calendarEl = document.getElementById('calendar');
+    <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom" style="min-height: 60px;">
+      <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+        <button class="btn btn-sm btn-outline-secondary border-0 d-none d-xl-inline-flex" id="panel-toggle" title="Toggle panel" style="padding: 0.15rem 0.3rem;"><i class="bi bi-chevron-right"></i></button>
+        <h5 class="fw-bold mb-0 text-truncate" id="detail-title" style="color: #1a1a2e; max-width: 400px;">{{ $selected->name }}</h5>
+        <span id="detail-status-badge">
+          @if($selected->status == 'draft')
+            <span class="badge bg-light text-dark border">Draft</span>
+          @elseif($selected->status == 'sent')
+            <span class="badge bg-success">Sent</span>
+          @elseif($selected->status == 'scheduled')
+            <span class="badge bg-warning text-dark border">Scheduled</span>
+          @endif
+        </span>
+        <div id="detail-audience" style="display: none;"></div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary border-0 d-xl-none" id="panel-close-mobile" title="Close panel" style="font-size: 1.1rem;"><i class="bi bi-x"></i></button>
+        <form action="{{ route('campaigns.send', $selected->id) }}" method="POST" style="display:inline;" id="detail-send-form">
+          @csrf
+          <button type="submit" class="btn btn-sm d-flex align-items-center gap-1 text-white" id="detail-send-btn" style="background: #e94560; border: none; border-radius: 8px; padding: 0.35rem 0.85rem; {{ $selected->status === 'sent' ? 'opacity: 0.5; pointer-events: none;' : '' }}">
+            <span><i class="bi bi-send"></i></span> Send
+          </button>
+        </form>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary border-0" data-bs-toggle="dropdown" style="font-size: 1.3rem; line-height: 1;"><i class="bi bi-three-dots"></i></button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" id="detail-edit-link" href="{{ route('campaigns.edit', $selected->id) }}"><i class="bi bi-pencil-square me-2"></i>Edit campaign</a></li>
+            <li><a class="dropdown-item" id="detail-preview-link" href="{{ route('campaigns.send-preview', $selected->id) }}"><i class="bi bi-eye me-2"></i>Preview Email</a></li>
+            <li><a class="dropdown-item" id="detail-view-link" href="{{ route('campaigns.view-email', $selected->id) }}"><i class="bi bi-file-text me-2"></i>View Email</a></li>
+            <li><a class="dropdown-item duplicate-campaign" href="#" data-id="{{ $selected->id }}"><i class="bi bi-files me-2"></i>Duplicate</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger delete-campaign" href="#" data-id="{{ $selected->id }}"><i class="bi bi-trash me-2"></i>Delete</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
-      let calendarInitialized = false;
-      let calendar;
+    <div class="d-flex align-items-center gap-4 px-4 py-2 border-bottom" style="background: #fafafa; font-size: 0.9rem;">
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span><i class="bi bi-person"></i></span>
+        <span><strong id="detail-creator">{{ $selected->created_by ?? 'Admin' }}</strong></span>
+      </div>
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span><i class="bi bi-calendar"></i></span>
+        <span>Created <span id="detail-created">{{ $selected->created_at->format('M d, Y') }}</span></span>
+      </div>
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span><i class="bi bi-arrow-repeat"></i></span>
+        <span>Updated <span id="detail-updated">{{ $selected->updated_at->diffForHumans() }}</span></span>
+      </div>
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span><i class="bi bi-people"></i></span>
+        <span><span id="detail-recipients">{{ $selected->contacts->count() + $selected->tags->sum(fn($t) => $t->contacts->count()) }}</span> recipients</span>
+      </div>
+      <div class="d-flex align-items-center gap-2 text-muted" id="detail-template-wrap" style="display: none;">
+        <span><i class="bi bi-file-text"></i></span>
+        <span>Template: <span id="detail-template">{{ $selected->template->name ?? 'None' }}</span></span>
+      </div>
+    </div>
 
-      function checkFullCalendar() {
-        if (typeof FullCalendar === 'undefined') {
-          console.error('FullCalendar library not loaded');
-          return false;
-        }
-        return true;
+    <div class="overflow-auto flex-grow-1 px-4 py-3" id="detail-scroll">
+      <div class="border rounded" style="border-style: dashed !important; border-color: #e94560 !important; background: #fff5f5;">
+        <div class="px-3 py-2 border-bottom d-flex align-items-center justify-content-between" style="background: #fff0f0;">
+          <div class="d-flex align-items-center gap-2">
+            <span><i class="bi bi-robot"></i></span>
+            <span class="fw-semibold" style="font-size: 0.9rem;">AI Suggested Draft</span>
+            <span class="badge bg-light text-muted border small">Beta</span>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-danger ai-takeover" style="border-radius: 6px;">Take Over</button>
+            <button class="btn btn-sm btn-outline-secondary ai-discard" style="border-radius: 6px;">Discard</button>
+          </div>
+        </div>
+        <div class="p-3">
+          <div class="mb-2 fw-bold" style="color: #e94560; font-size: 0.95rem;" id="ai-subject">Subject: {{ $selected->name }}</div>
+          <div class="text-muted lh-lg" id="ai-body" style="font-size: 0.9rem;">
+            <p>Hi {{ $selected->contact->name ?? 'there' }},</p>
+            <p>We're excited to share our latest updates with you. This AI-generated draft was created based on your campaign "{{ $selected->name }}" to help you get started quickly.</p>
+            <p>Feel free to edit this content or use our template to craft the perfect message for your audience.</p>
+            <p>Best regards,<br>The SendFlow Team</p>
+          </div>
+          <div class="d-flex gap-3 mt-2 pt-2 border-top" style="font-size: 0.85rem;">
+            <a href="#" class="text-decoration-none text-muted fw-medium"><i class="bi bi-pencil"></i> Edit</a>
+            <a href="#" class="text-decoration-none text-muted fw-medium"><i class="bi bi-arrow-repeat"></i> Regenerate</a>
+            <a href="#" class="text-decoration-none text-muted fw-medium"><i class="bi bi-files"></i> Copy</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-column mt-4" style="min-height: 200px;">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="fw-semibold text-muted" style="font-size: 0.9rem;"><i class="bi bi-chat-dots"></i> Comments</span>
+          <span class="text-muted" id="comment-count" style="font-size: 0.85rem;">0 comments</span>
+        </div>
+        <div class="flex-grow-1 mb-2" id="comments-container" style="max-height: 300px; overflow-y: auto;">
+        </div>
+        <div class="d-flex gap-2">
+          <input type="text" id="comment-input" class="form-control form-control-sm" placeholder="Write a comment..." style="background: #f1f3f5; border: none; border-radius: 8px;">
+          <button class="btn btn-sm d-flex align-items-center justify-content-center text-white" id="comment-send" style="background: #e94560; border: none; border-radius: 8px; width: 34px; height: 34px;"><i class="bi bi-send"></i></button>
+        </div>
+      </div>
+    </div>
+
+    @else
+    <div class="d-flex align-items-center justify-content-center flex-grow-1 text-muted">
+      <div class="text-center">
+        <div style="font-size: 4rem; margin-bottom: 1rem; color: #e94560;"><i class="bi bi-envelope"></i></div>
+        <p class="fw-bold" style="font-size: 1.2rem;">No campaigns yet</p>
+        <a href="{{ route('campaigns.create') }}" class="btn btn-sm" style="background: #e94560; color: white; border-radius: 8px;">Create your first campaign</a>
+      </div>
+    </div>
+    @endif
+  </div>
+
+  {{-- Right Rail --}}
+  <div class="right-rail d-flex flex-column align-items-center py-3 gap-3" style="width: 44px; min-width: 44px; background: #1a1a2e;">
+    <a href="#" class="text-decoration-none rail-icon" title="Notifications" style="color: #8899aa; font-size: 1.1rem;"><i class="bi bi-bell"></i></a>
+    <a href="#" class="text-decoration-none rail-icon" title="Help" style="color: #8899aa; font-size: 1.1rem;"><i class="bi bi-question-circle"></i></a>
+    <a href="#" class="text-decoration-none rail-icon" title="Settings" style="color: #8899aa; font-size: 1.1rem;"><i class="bi bi-gear"></i></a>
+    <a href="#" class="text-decoration-none rail-icon mt-auto" title="Expand" style="color: #8899aa; font-size: 1.1rem;"><i class="bi bi-arrows-expand"></i></a>
+  </div>
+</div>
+
+<style>
+  .campaign-card {
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fff;
+  }
+  .campaign-card:hover {
+    background: #f1f3f5;
+  }
+  .campaign-card.selected-card {
+    background: #fff0f0;
+    border-left: 3px solid #e94560;
+    padding-left: calc(1rem - 3px) !important;
+  }
+  .filter-pill {
+    background: transparent;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    transition: all 0.15s;
+  }
+  .filter-pill:hover {
+    background: #f1f3f5;
+  }
+  .filter-pill.active-filter-pill {
+    background: #e94560;
+    border-color: #e94560;
+    color: #fff;
+  }
+  .rail-icon:hover {
+    color: #e94560 !important;
+  }
+  #detail-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  #detail-scroll::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 3px;
+  }
+  #campaign-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  #campaign-list::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 3px;
+  }
+  .comment-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f3f5;
+  }
+  .comment-item:last-child {
+    border-bottom: none;
+  }
+  .panel-collapsed #right-canvas {
+    flex: 0 0 0 !important;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .panel-collapsed #center-queue {
+    flex: 1 1 0%;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+</style>
+
+<script>
+  @php
+    $campaignsJs = $campaigns->map(function($c) {
+      return [
+        'id' => $c->id,
+        'name' => $c->name,
+        'type' => ucfirst($c->type ?? 'Regular email'),
+        'status' => $c->status,
+        'updated_at' => $c->updated_at->format('D, M d, h:i A'),
+        'updated_diff' => $c->updated_at->diffForHumans(),
+        'created_at' => $c->created_at->format('M d, Y'),
+        'created_by' => $c->created_by ?? 'Admin',
+        'tags' => $c->tags->pluck('name')->toArray(),
+        'recipients_count' => $c->contacts->count() + $c->tags->sum(fn($t) => $t->contacts->count()),
+        'edit_url' => route('campaigns.edit', $c->id),
+        'preview_url' => route('campaigns.send-preview', $c->id),
+        'view_email_url' => route('campaigns.view-email', $c->id),
+        'send_url' => route('campaigns.send', $c->id),
+        'contact_name' => $c->contact->name ?? null,
+      ];
+    });
+  @endphp
+  document.addEventListener('DOMContentLoaded', function() {
+    const campaignsData = @json($campaignsJs);
+
+    let currentId = campaignsData.length > 0 ? campaignsData[0].id : null;
+
+    // ---------- Comments ----------
+    let comments = [];
+    const commentsContainer = document.getElementById('comments-container');
+    const commentInput = document.getElementById('comment-input');
+    const commentSend = document.getElementById('comment-send');
+    const commentCount = document.getElementById('comment-count');
+
+    function renderComments() {
+      if (!commentsContainer) return;
+      if (comments.length === 0) {
+        commentsContainer.innerHTML = '<div class="text-muted text-center py-4" style="font-size: 0.9rem;">No comments yet. Start the conversation!</div>';
+        return;
       }
-
-      listTab.addEventListener('click', e => {
-        e.preventDefault();
-        listTab.classList.add('active');
-        calTab.classList.remove('active');
-        listContent.style.display = 'block';
-        calContent.style.display = 'none';
-      });
-
-      calTab.addEventListener('click', e => {
-        e.preventDefault();
-        calTab.classList.add('active');
-        listTab.classList.remove('active');
-        listContent.style.display = 'none';
-        calContent.style.display = 'block';
-
-        if (!checkFullCalendar()) return;
-
-        if (!calendarInitialized) {
-          try {
-            calendar = new FullCalendar.Calendar(calendarEl, {
-              initialView: 'dayGridMonth',
-              height: 600,
-              headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: ''
-              },
-              events: [
-                { title: 'Untitled', start: '2025-10-16', type: 'regular', status: 'draft' },
-                { title: 'Campaign A', start: '2025-10-19', type: 'regular', status: 'sent' },
-                { title: 'Campaign B', start: '2025-10-20', type: 'automation', status: 'draft' },
-                { title: 'Campaign C', start: '2025-10-21', type: 'regular', status: 'sent' },
-                { title: 'Campaign D', start: '2025-10-22', type: 'regular', status: 'sent' },
-                { title: 'Campaign E', start: '2025-10-23', type: 'automation', status: 'draft' },
-                { title: 'Campaign F', start: '2025-10-24', type: 'regular', status: 'sent' },
-              ],
-              eventDidMount: function(info) {
-                info.el.classList.add('border', 'rounded', 'p-1', 'bg-light');
-                if (info.event.extendedProps.status === 'draft') {
-                  info.el.classList.add('border-warning');
-                } else if (info.event.extendedProps.status === 'sent') {
-                  info.el.classList.add('border-success');
-                }
-              }
-            });
-            calendar.render();
-            calendarInitialized = true;
-          } catch (error) {
-            console.error('Error initializing calendar:', error);
-          }
-        }
-      });
-
-      function applyFilters() {
-        if (!calendarInitialized) return;
-        const type = document.getElementById('filter-type').value;
-        const status = document.getElementById('filter-status').value;
-        const holiday = document.getElementById('filter-holiday').value;
-
-        const allEvents = [
-          { title: 'Untitled', start: '2025-10-16', type: 'regular', status: 'draft' },
-          { title: 'Campaign A', start: '2025-10-19', type: 'regular', status: 'sent' },
-          { title: 'Campaign B', start: '2025-10-20', type: 'automation', status: 'draft' },
-          { title: 'Campaign C', start: '2025-10-21', type: 'regular', status: 'sent' },
-          { title: 'Campaign D', start: '2025-10-22', type: 'regular', status: 'sent' },
-          { title: 'Campaign E', start: '2025-10-23', type: 'automation', status: 'draft' },
-          { title: 'Campaign F', start: '2025-10-24', type: 'regular', status: 'sent' },
-        ];
-
-        let filtered = allEvents.filter(e =>
-          (type === 'all' || e.type === type) &&
-          (status === 'all' || e.status === status)
-        );
-
-        calendar.removeAllEvents();
-        calendar.addEventSource(filtered);
-
-        if (holiday === 'us') {
-          calendar.addEventSource([{ title: 'US Holiday', start: '2025-10-14', color: '#dc3545' }]);
-        }
-      }
-
-      document.getElementById('filter-type').addEventListener('change', applyFilters);
-      document.getElementById('filter-status').addEventListener('change', applyFilters);
-      document.getElementById('filter-holiday').addEventListener('change', applyFilters);
-
-      // --------------------------
-      // Delete Function
-      // --------------------------
-      document.querySelectorAll('.delete-campaign').forEach(btn => {
-        btn.addEventListener('click', async e => {
-          e.preventDefault();
-          const id = btn.dataset.id;
-          if (!confirm('Delete this campaign?')) return;
-
-          try {
-            const response = await fetch(`/campaigns/${id}`, {
-              method: 'DELETE',
-              headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-              }
-            });
-
-            if (response.ok) {
-              document.getElementById(`campaign-row-${id}`).remove();
-              alert('Campaign deleted successfully.');
-            } else {
-              alert('Failed to delete campaign.');
-            }
-          } catch (error) {
-            console.error('Error deleting campaign:', error);
-            alert('Error deleting campaign.');
-          }
-        });
-      });
-    });
-
-    // --------------------------
-    // Search Function
-    // --------------------------
-    document.getElementById('campaign-search').addEventListener('input', function() {
-        const query = this.value.toLowerCase();
-        document.querySelectorAll('#list-content tbody tr').forEach(row => {
-            const name = row.dataset.name;
-            const status = row.dataset.status;
-            if (name.includes(query) || status.includes(query)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
-
-    // --------------------------
-    // Checkbox Select All
-    // --------------------------
-    const selectAllCheckbox = document.getElementById('select-all');
-    const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-
-    selectAllCheckbox.addEventListener('change', () => {
-      rowCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
-    });
-
-    rowCheckboxes.forEach(cb => {
-      cb.addEventListener('change', () => {
-        if (!cb.checked) {
-          selectAllCheckbox.checked = false;
-        } else {
-          // If all checkboxes are checked, check "select all"
-          const allChecked = Array.from(rowCheckboxes).every(c => c.checked);
-          selectAllCheckbox.checked = allChecked;
-        }
-      });
-    });
-
-
-    // --------------------------
-    // Sorting Function
-    // --------------------------
-    document.querySelectorAll('.sort-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const sortField = this.dataset.sort;
-            const sortOrder = this.dataset.order; // 'asc' or 'desc'
-
-            const tbody = document.querySelector('#list-content tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-
-            rows.sort((a, b) => {
-                let aVal = a.dataset[sortField];
-                let bVal = b.dataset[sortField];
-
-                // for dates, convert to timestamp
-                if (sortField === 'updated') {
-                    aVal = new Date(aVal).getTime();
-                    bVal = new Date(bVal).getTime();
-                }
-
-                if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-                if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            // re-append sorted rows
-            rows.forEach(r => tbody.appendChild(r));
-
-            // toggle order for next click
-            this.dataset.order = sortOrder === 'asc' ? 'desc' : 'asc';
-        });
-    });
-
-    // --------------------------
-    // Dupicate Function
-    // --------------------------
-
-    document.querySelectorAll('.duplicate-campaign').forEach(btn => {
-  btn.addEventListener('click', async e => {
-    e.preventDefault();
-    const id = btn.dataset.id;
-    if (!confirm('Duplicate this campaign?')) return;
-
-    try {
-      const response = await fetch(`/campaigns/${id}/duplicate`, {
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          'Accept': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert('Campaign duplicated successfully.');
-        location.reload();
-      } else {
-        alert('Failed to duplicate campaign: ' + (data.error ?? 'Unknown error'));
-        console.error('Duplicate error:', data);
-      }
-    } catch (error) {
-      console.error('Error duplicating campaign:', error);
-      alert('Error duplicating campaign. Check console.');
+      commentsContainer.innerHTML = comments.map(c =>
+        `<div class="comment-item d-flex gap-2">
+          <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+            style="width: 32px; height: 32px; background: #e94560; font-size: 0.75rem; flex-shrink: 0;">
+            ${c.avatar}
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2">
+              <strong style="font-size: 0.9rem;">${c.author}</strong>
+              <span class="text-muted" style="font-size: 0.75rem;">${c.time}</span>
+            </div>
+            <div class="text-muted" style="font-size: 0.85rem;">${c.text}</div>
+          </div>
+        </div>`
+      ).join('');
     }
+
+    if (commentSend) {
+      commentSend.addEventListener('click', function() {
+        const text = commentInput.value.trim();
+        if (!text) return;
+        const user = '{{ auth()->user()->name ?? 'User' }}';
+        const initial = '{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}';
+        comments.push({
+          author: user,
+          avatar: initial,
+          text: text,
+          time: 'Just now'
+        });
+        commentInput.value = '';
+        renderComments();
+        commentCount.textContent = comments.length + ' comment' + (comments.length !== 1 ? 's' : '');
+        commentsContainer.scrollTop = commentsContainer.scrollHeight;
+      });
+      commentInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') commentSend.click();
+      });
+    }
+
+    // ---------- Panel Collapse Toggle ----------
+    const layout = document.querySelector('.campaign-layout');
+    const toggleBtn = document.getElementById('panel-toggle');
+    const closeBtn = document.getElementById('panel-close-mobile');
+
+    function isPanelCollapsed() {
+      return layout.classList.contains('panel-collapsed');
+    }
+
+    function expandPanel() {
+      layout.classList.remove('panel-collapsed');
+      if (toggleBtn) toggleBtn.innerHTML = '<i class="bi bi-chevron-right"></i>';
+    }
+
+    function collapsePanel() {
+      layout.classList.add('panel-collapsed');
+      if (toggleBtn) toggleBtn.innerHTML = '<i class="bi bi-chevron-left"></i>';
+    }
+
+    function togglePanel() {
+      if (isPanelCollapsed()) {
+        expandPanel();
+      } else {
+        collapsePanel();
+      }
+    }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', togglePanel);
+    if (closeBtn) closeBtn.addEventListener('click', collapsePanel);
+
+    // ---------- Campaign Selection ----------
+    function selectCampaign(id, toggle) {
+      const wasCollapsed = isPanelCollapsed();
+      const wasSameCard = currentId === id;
+
+      if (wasSameCard && toggle !== false) {
+        togglePanel();
+        return;
+      }
+
+      if (wasCollapsed) expandPanel();
+
+      currentId = id;
+      document.querySelectorAll('.campaign-card').forEach(c => {
+        c.classList.toggle('selected-card', parseInt(c.dataset.id) === id);
+      });
+
+      const data = campaignsData.find(c => c.id === id);
+      if (!data) return;
+
+      const statusBadge = {
+        draft: '<span class="badge bg-light text-dark border">Draft</span>',
+        sent: '<span class="badge bg-success">Sent</span>',
+        scheduled: '<span class="badge bg-warning text-dark border">Scheduled</span>',
+      };
+
+      document.getElementById('detail-title').textContent = data.name;
+      document.getElementById('detail-status-badge').innerHTML = statusBadge[data.status] || '';
+      document.getElementById('detail-creator').textContent = data.created_by;
+      document.getElementById('detail-created').textContent = data.created_at;
+      document.getElementById('detail-updated').textContent = data.updated_diff;
+      document.getElementById('detail-recipients').textContent = data.recipients_count;
+      document.getElementById('detail-edit-link').href = data.edit_url;
+      document.getElementById('detail-preview-link').href = data.preview_url;
+      document.getElementById('detail-view-link').href = data.view_email_url;
+      document.getElementById('detail-send-form').action = data.send_url;
+
+      const sendBtn = document.getElementById('detail-send-btn');
+      if (data.status === 'sent') {
+        sendBtn.style.opacity = '0.5';
+        sendBtn.style.pointerEvents = 'none';
+      } else {
+        sendBtn.style.opacity = '1';
+        sendBtn.style.pointerEvents = 'auto';
+      }
+
+      document.querySelectorAll('.duplicate-campaign').forEach(el => el.dataset.id = id);
+      document.querySelectorAll('.delete-campaign').forEach(el => el.dataset.id = id);
+
+      const aiSubject = document.getElementById('ai-subject');
+      if (aiSubject) aiSubject.textContent = 'Subject: ' + data.name;
+
+      const aiBody = document.getElementById('ai-body');
+      if (aiBody) {
+        const contactName = data.contact_name || 'there';
+        aiBody.innerHTML =
+          `<p>Hi ${contactName},</p>
+          <p>We're excited to share our latest updates with you. This AI-generated draft was created based on your campaign "${data.name}" to help you get started quickly.</p>
+          <p>Feel free to edit this content or use our template to craft the perfect message for your audience.</p>
+          <p>Best regards,<br>The SendFlow Team</p>`;
+      }
+    }
+
+    document.querySelectorAll('.campaign-card').forEach(card => {
+      card.addEventListener('click', function() {
+        selectCampaign(parseInt(this.dataset.id), true);
+      });
+    });
+
+    // ---------- Filter Pills ----------
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', function() {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active-filter-pill'));
+        this.classList.add('active-filter-pill');
+
+        const filter = this.dataset.filter;
+        document.querySelectorAll('.campaign-card').forEach(card => {
+          if (filter === 'all' || card.dataset.status === filter) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // ---------- Sidebar Status Filters ----------
+    document.querySelectorAll('.filter-status').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.filter-status').forEach(l => l.classList.remove('active-filter'));
+        this.classList.add('active-filter');
+
+        const filter = this.dataset.status;
+        document.querySelectorAll('.filter-pill').forEach(p => {
+          p.classList.toggle('active-filter-pill', p.dataset.filter === filter);
+        });
+
+        document.querySelectorAll('.campaign-card').forEach(card => {
+          if (filter === 'all' || card.dataset.status === filter) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // ---------- Search ----------
+    const searchInput = document.getElementById('campaign-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('.campaign-card').forEach(card => {
+          const name = card.dataset.name;
+          if (name.includes(query)) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // ---------- AI Draft Actions ----------
+    document.querySelectorAll('.ai-takeover').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const container = this.closest('.border.rounded');
+        if (container) {
+          container.style.borderStyle = 'solid !important';
+          container.style.borderColor = '#e94560';
+          container.style.background = '#fff';
+          const header = container.querySelector('.border-bottom');
+          if (header) header.style.background = '#fff';
+          this.textContent = '✓ Taken Over';
+          this.classList.remove('btn-outline-danger');
+          this.classList.add('btn-danger');
+          this.disabled = true;
+          const discardBtn = container.querySelector('.ai-discard');
+          if (discardBtn) discardBtn.style.display = 'none';
+        }
+      });
+    });
+
+    document.querySelectorAll('.ai-discard').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const container = this.closest('.border.rounded');
+        if (container) {
+          container.style.display = 'none';
+        }
+      });
+    });
+
+    // ---------- Duplicate ----------
+    document.querySelectorAll('.duplicate-campaign').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const id = this.dataset.id;
+        if (!confirm('Duplicate this campaign?')) return;
+        try {
+          const response = await fetch(`/campaigns/${id}/duplicate`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+          });
+          const data = await response.json();
+          if (response.ok) {
+            alert('Campaign duplicated successfully.');
+            location.reload();
+          } else {
+            alert('Failed: ' + (data.error ?? 'Unknown error'));
+          }
+        } catch (error) {
+          alert('Error duplicating campaign.');
+        }
+      });
+    });
+
+    // ---------- Delete ----------
+    document.querySelectorAll('.delete-campaign').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const id = this.dataset.id;
+        if (!confirm('Delete this campaign?')) return;
+        try {
+          const response = await fetch(`/campaigns/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+          });
+          if (response.ok) {
+            const card = document.querySelector(`.campaign-card[data-id="${id}"]`);
+            if (card) card.remove();
+            alert('Campaign deleted successfully.');
+            const remaining = document.querySelectorAll('.campaign-card');
+            if (remaining.length > 0) {
+              selectCampaign(parseInt(remaining[0].dataset.id));
+            } else {
+              location.reload();
+            }
+          } else {
+            alert('Failed to delete campaign.');
+          }
+        } catch (error) {
+          alert('Error deleting campaign.');
+        }
+      });
+    });
   });
-});
+</script>
 
-
-  </script>
 </x-layouts.app>
