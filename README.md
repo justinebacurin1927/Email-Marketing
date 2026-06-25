@@ -88,8 +88,15 @@ cp .env.example .env
 
 php artisan migrate
 php artisan db:seed --class=SampleDataSeeder
-php artisan serve --port=8001
 ```
+
+### Run Development Server
+
+```bash
+composer dev
+```
+
+Starts the Laravel dev server (port 8000), queue worker, log tailing, and Vite HMR (port 5173).
 
 ### SMTP (Gmail)
 1. Enable **2-factor authentication** on your Google account

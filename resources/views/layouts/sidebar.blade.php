@@ -154,11 +154,17 @@
   <div class="p-3 border-top border-secondary d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center gap-2">
       <a href="{{ route('profile.index') }}" class="text-decoration-none d-flex align-items-center gap-2">
-        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-          style="width: 2rem; height: 2rem; background: #e94560; font-size: 0.75rem;">
-          {{ strtoupper(substr(auth()->user()->name ?? 'G', 0, 1)) }}
-        </div>
-        <small style="color: #c4c4d4;">{{ auth()->user()->name ?? 'Guest' }}</small>
+        @php $user = auth()->user(); @endphp
+        @if($user && $user->avatar_url)
+          <img src="{{ $user->avatar_url }}" alt="Avatar"
+            class="rounded-circle" style="width: 2rem; height: 2rem; object-fit: cover;">
+        @else
+          <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+            style="width: 2rem; height: 2rem; background: #e94560; font-size: 0.75rem;">
+            {{ strtoupper(substr($user->name ?? 'G', 0, 1)) }}
+          </div>
+        @endif
+        <small style="color: #c4c4d4;">{{ $user->name ?? 'Guest' }}</small>
       </a>
     </div>
     <div class="d-flex gap-2">

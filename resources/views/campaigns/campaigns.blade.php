@@ -178,14 +178,6 @@
     </div>
     @endif
   </div>
-
-  {{-- Right Rail --}}
-  <div class="right-rail d-flex flex-column align-items-center py-3 gap-3" style="width: 44px; min-width: 44px; background: #1a1a2e;">
-    <a href="#" class="text-decoration-none rail-icon" title="Notifications" style="color: #8899aa; font-size: 1.1rem;"><i class="bi bi-bell"></i></a>
-    <a href="#" class="text-decoration-none rail-icon" title="Help" style="color: #8899aa; font-size: 1.1rem;"><i class="bi bi-question-circle"></i></a>
-    <a href="#" class="text-decoration-none rail-icon" title="Settings" style="color: #8899aa; font-size: 1.1rem;"><i class="bi bi-gear"></i></a>
-    <a href="#" class="text-decoration-none rail-icon mt-auto" title="Expand" style="color: #8899aa; font-size: 1.1rem;"><i class="bi bi-arrows-expand"></i></a>
-  </div>
 </div>
 
 <style>

@@ -40,18 +40,29 @@ class ContactController extends Controller
         'region' => 'nullable|string',
         'postal' => 'nullable|string',
         'country' => 'nullable|string',
-        'tags' => 'nullable|string'
+        'tag_ids' => 'nullable|array',
+        'tag_ids.*' => 'exists:tags,id',
+        'new_tags' => 'nullable|string',
     ]);
+
+    $validated['permission'] = $request->boolean('permission');
+    $validated['subscribed'] = $request->boolean('subscribed');
 
     $contact = Contact::create($validated);
 
-    if (!empty($request->tags)) {
-        $tags = array_map('trim', explode(',', $request->tags));
+    $tagIds = $request->input('tag_ids', []);
 
-        foreach ($tags as $tagName) {
-            $tag = Tag::firstOrCreate(['name' => $tagName]);
-            $contact->tags()->attach($tag->id);
+    if (!empty($request->new_tags)) {
+        $newTagNames = array_map('trim', explode(',', $request->new_tags));
+        foreach ($newTagNames as $name) {
+            if ($name === '') continue;
+            $tag = Tag::firstOrCreate(['name' => $name]);
+            $tagIds[] = $tag->id;
         }
+    }
+
+    if (!empty($tagIds)) {
+        $contact->tags()->attach(array_unique($tagIds));
     }
 
     return redirect()->route('contacts.index')->with('success', 'Contact added successfully.');

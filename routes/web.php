@@ -82,3 +82,5 @@ Route::get('/tags', [TagController::class, 'index'])->name('tags.index');
 Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 Route::put('/profile/password', [ProfileController::class, 'password'])->name('profile.password');
+Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar.upload');
+Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');

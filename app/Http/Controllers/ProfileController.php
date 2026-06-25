@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -54,5 +55,39 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.index')
             ->with('profile_success', 'Password updated successfully.');
+    }
+
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = auth()->user();
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete('avatars/' . $user->avatar);
+        }
+
+        $filename = $user->id . '_' . time() . '.' . $request->file('avatar')->extension();
+        $request->file('avatar')->storeAs('avatars', $filename, 'public');
+
+        $user->update(['avatar' => $filename]);
+
+        return redirect()->route('profile.index')
+            ->with('profile_success', 'Avatar updated successfully.');
+    }
+
+    public function removeAvatar(Request $request)
+    {
+        $user = auth()->user();
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete('avatars/' . $user->avatar);
+            $user->update(['avatar' => null]);
+        }
+
+        return redirect()->route('profile.index')
+            ->with('profile_success', 'Avatar removed successfully.');
     }
 }

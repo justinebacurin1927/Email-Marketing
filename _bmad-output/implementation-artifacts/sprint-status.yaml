@@ -1,0 +1,55 @@
+# generated: 2025-06-25
+# last_updated: 2025-06-25
+# project: SendFlow
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: /home/jaycee/Projects/Email-Marketing/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status: backlog → in-progress → done
+# Story Status: backlog → ready-for-dev → in-progress → review → done
+# Retrospective Status: optional ↔ done
+# Action Item Status: open → in-progress → done
+
+generated: 2025-06-25
+last_updated: 2025-06-25
+project: SendFlow
+project_key: NOKEY
+tracking_system: file-system
+story_location: /home/jaycee/Projects/Email-Marketing/_bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: backlog
+  1-1-display-live-dashboard-statistics: backlog
+  1-2-render-campaign-analytics-charts: backlog
+  1-3-display-quick-action-tiles-and-recent-campaigns: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-create-campaign-with-recipient-targeting: backlog
+  2-2-send-campaign-to-recipients: backlog
+  2-3-schedule-campaign-for-future-delivery: backlog
+  2-4-duplicate-campaign: backlog
+  2-5-preview-campaign-email: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-manage-contacts-with-full-crud: backlog
+  3-2-manage-tags-with-contact-assignment: backlog
+  3-3-import-and-export-contacts-via-csv: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-create-automation-workflow-with-multi-step-sequence: backlog
+  4-2-process-automation-triggers-and-execute-steps: backlog
+  4-3-toggle-automation-status: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-manage-email-templates: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-manage-user-profile-with-avatar: backlog
+  epic-6-retrospective: optional
