@@ -10,6 +10,7 @@
   .message-item { cursor: pointer; transition: background 0.15s; border-radius: 8px; padding: 12px; }
   .message-item:hover { background: rgba(233, 69, 96, 0.06); }
   .message-item.active { background: rgba(233, 69, 96, 0.10); border-left: 3px solid #e94560; }
+  .message-item.unread { border-left: 3px solid #e94560; }
   .tab-link { font-size: 0.85rem; padding-bottom: 8px; border-bottom: 2px solid transparent; transition: all 0.15s; cursor: pointer; }
   .tab-link.active { color: #e94560 !important; font-weight: 600; border-bottom-color: #e94560; }
   .tab-link:hover { color: #e94560 !important; }
@@ -40,8 +41,8 @@
             <label class="small fw-semibold mb-1">Source</label>
             <select id="sourceSelect" class="form-select form-select-sm">
               <option value="any">Any</option>
-              <option value="emailMarketingReplies">Email Marketing</option>
-              <option value="contactForm">Contact Form</option>
+              <option value="email_marketing">Email Marketing</option>
+              <option value="contact_form">Contact Form</option>
             </select>
           </div>
           <div class="col-6">
@@ -71,7 +72,7 @@
     <div id="messageList" class="p-2 flex-grow-1 overflow-auto"></div>
   </div>
 
-  {{-- Detail Panel (with toggle button) --}}
+  {{-- Detail Panel --}}
   <div class="detail-panel" id="detailPanel">
     <div class="d-flex align-items-center px-4 py-3 border-bottom" style="min-height: 60px;">
       <button class="btn btn-sm btn-outline-secondary border-0 d-flex align-items-center justify-content-center" id="panelToggle" title="Toggle panel" style="padding: 0.15rem 0.3rem; width: 28px; height: 28px;">
@@ -95,22 +96,14 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    const allMessages = @json($messages);
+
     const messages = {
-      todo: [
-        { name: 'Sarah Johnson', text: 'Please update my order #4829, I need to change the shipping address.', source: 'emailMarketingReplies', email: 'sarah@example.com' },
-        { name: 'Mike Chen', text: 'Can I change my email address associated with my account?', source: 'contactForm', email: 'mike@example.com' },
-        { name: 'Emily Davis', text: 'When will the new collection be available?', source: 'emailMarketingReplies', email: 'emily@example.com' },
-      ],
-      done: [
-        { name: 'Alex Rivera', text: 'Thank you for the quick response, everything works now!', source: 'emailMarketingReplies', email: 'alex@example.com' },
-        { name: 'Lisa Park', text: 'All good now, appreciate the help with my account.', source: 'contactForm', email: 'lisa@example.com' },
-      ],
-      trash: [
-        { name: 'Spam User', text: 'Claim your free prize now!!!', source: 'contactForm', email: 'spam@example.com' },
-      ],
-      all: []
+      todo: allMessages.filter(m => !m.is_read && !m.is_trashed),
+      done: allMessages.filter(m => m.is_read && !m.is_trashed),
+      trash: allMessages.filter(m => m.is_trashed),
+      all: allMessages.filter(m => !m.is_trashed),
     };
-    messages.all = [...messages.todo, ...messages.done, ...messages.trash];
 
     const layout = document.getElementById('inboxLayout');
     const toggleBtn = document.getElementById('panelToggle');
@@ -155,16 +148,18 @@
 
     function renderMessages() {
       messageList.innerHTML = '';
-      let filtered = messages[currentTab];
+      let filtered = messages[currentTab] || [];
 
       if (currentSource !== 'any') {
-        filtered = filtered.filter(msg => msg.source === currentSource);
+        filtered = filtered.filter(msg => msg.source_type === currentSource);
       }
 
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
         filtered = filtered.filter(msg =>
-          msg.name.toLowerCase().includes(term) || msg.text.toLowerCase().includes(term)
+          (msg.sender_name || '').toLowerCase().includes(term) ||
+          (msg.subject || '').toLowerCase().includes(term) ||
+          (msg.body || '').toLowerCase().includes(term)
         );
       }
 
@@ -175,13 +170,22 @@
 
       filtered.forEach((msg) => {
         const div = document.createElement('div');
-        div.className = 'message-item mb-1';
+        const isUnread = !msg.is_read;
+        div.className = 'message-item mb-1' + (isUnread && currentTab !== 'trash' ? ' unread' : '');
+        const preview = (msg.body || '').substring(0, 80);
         div.innerHTML = `
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="fw-semibold" style="color: #1a1a2e; font-size: 0.9rem;">${msg.name}</span>
-            <span class="small text-secondary">${msg.email}</span>
+            <span class="fw-semibold" style="color: #1a1a2e; font-size: 0.9rem;">${esc(msg.sender_name || msg.sender_email)}</span>
+            <span class="small text-secondary">${msg.sender_email}</span>
           </div>
-          <div class="small text-secondary text-truncate">"${msg.text}"</div>
+          <div class="small fw-medium text-truncate" style="color: #1a1a2e;">${esc(msg.subject || '')}</div>
+          <div class="small text-secondary text-truncate">${esc(preview)}</div>
+          <div class="d-flex justify-content-between align-items-center mt-1">
+            <span class="small text-muted">${new Date(msg.created_at).toLocaleDateString()}</span>
+            <span class="badge rounded-pill" style="background: ${msg.source_type === 'email_marketing' ? '#533483' : '#0f3460'}; font-size: 0.65rem;">
+              ${msg.source_type === 'email_marketing' ? 'Email Marketing' : 'Contact Form'}
+            </span>
+          </div>
         `;
         div.addEventListener('click', () => {
           document.querySelectorAll('.message-item').forEach(i => i.classList.remove('active'));
@@ -193,28 +197,45 @@
       });
     }
 
+    function esc(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
     function openMessage(msg) {
       messageView.innerHTML = `
         <div class="p-4 h-100 w-100 overflow-auto d-flex flex-column" style="background: #fff;">
-          <button class="btn btn-sm btn-outline-secondary align-self-start mb-3 d-flex align-items-center gap-1" id="backBtn" style="font-size: 0.8rem;">
-            <i class="bi bi-arrow-left"></i> Back
-          </button>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" id="backBtn" style="font-size: 0.8rem;">
+              <i class="bi bi-arrow-left"></i> Back
+            </button>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 action-btn" data-action="trash" data-id="${msg.id}" style="font-size: 0.8rem;">
+                <i class="bi bi-trash"></i> Trash
+              </button>
+              <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 action-btn" data-action="delete" data-id="${msg.id}" style="font-size: 0.8rem;">
+                <i class="bi bi-trash-fill"></i> Delete
+              </button>
+            </div>
+          </div>
           <div class="d-flex justify-content-between align-items-start mb-4">
             <div>
-              <h5 class="fw-bold mb-1" style="color: #1a1a2e;">${msg.name}</h5>
-              <span class="text-secondary" style="font-size: 0.85rem;">${msg.email}</span>
+              <h5 class="fw-bold mb-1" style="color: #1a1a2e;">${esc(msg.sender_name || msg.sender_email)}</h5>
+              <span class="text-secondary" style="font-size: 0.85rem;">${esc(msg.sender_email)}</span>
+              <div class="mt-1 small text-muted">${esc(msg.subject || '')}</div>
             </div>
-            <span class="badge rounded-pill" style="background: ${msg.source === 'emailMarketingReplies' ? '#533483' : '#0f3460'}; font-size: 0.7rem;">
-              ${msg.source === 'emailMarketingReplies' ? 'Email Marketing' : 'Contact Form'}
+            <span class="badge rounded-pill" style="background: ${msg.source_type === 'email_marketing' ? '#533483' : '#0f3460'}; font-size: 0.7rem;">
+              ${msg.source_type === 'email_marketing' ? 'Email Marketing' : 'Contact Form'}
             </span>
           </div>
           <div class="border rounded p-4 bg-light flex-grow-1">
-            <p style="color: #1a1a2e;">${msg.text}</p>
+            <p style="color: #1a1a2e; white-space: pre-wrap;">${esc(msg.body)}</p>
           </div>
           <div class="mt-3">
             <div class="input-group">
-              <textarea class="form-control" rows="2" placeholder="Type your reply..."></textarea>
-              <button class="btn" style="background: #e94560; color: #fff;">Send</button>
+              <textarea class="form-control" rows="2" id="replyText" placeholder="Type your reply..."></textarea>
+              <button class="btn" style="background: #e94560; color: #fff;" id="sendReplyBtn">Send</button>
             </div>
           </div>
         </div>
@@ -222,6 +243,25 @@
       document.getElementById('backBtn').addEventListener('click', () => {
         document.querySelectorAll('.message-item').forEach(i => i.classList.remove('active'));
         renderMessages();
+      });
+      document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const id = this.dataset.id;
+          const action = this.dataset.action;
+          const url = action === 'trash' ? '/inbox/' + id + '/trash' : '/inbox/' + id;
+          const method = action === 'trash' ? 'POST' : 'DELETE';
+          fetch(url, { method, headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } })
+            .then(r => { if (r.ok) location.reload(); });
+        });
+      });
+      document.getElementById('sendReplyBtn')?.addEventListener('click', function () {
+        const textarea = document.getElementById('replyText');
+        const body = textarea?.value?.trim();
+        if (!body) return;
+        window.open('mailto:' + encodeURIComponent(msg.sender_email) +
+          '?subject=' + encodeURIComponent('Re: ' + (msg.subject || '')) +
+          '&body=' + encodeURIComponent(body), '_blank');
       });
     }
 

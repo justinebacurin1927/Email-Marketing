@@ -41,6 +41,16 @@ An original email marketing application built with Laravel, featuring campaign m
 - Queueable job dispatching
 - Uses template body as email content with custom subject lines
 
+### Inbox (Inbound Email)
+- Real-time inbox at `/audience/inbox` — messages loaded from the database (no hardcoded mock data)
+- **Tabs:** To Do (unread), Done (read), Trash, All
+- **Filtering:** By source type (Email Marketing / Contact Form) and labels
+- **Search:** Client-side filtering by sender name, subject, or body
+- **Message detail panel:** Shows sender, subject, body, and source badge
+- **Actions:** Trash (soft), Delete (permanent), Reply (opens email client)
+- **Mailgun webhook integration:** Inbound route at `/webhooks/mailgun/inbound` (CSRF-exempt) parses incoming replies, links them to subscribed contacts, and saves to the database
+- **Subscriber-only filtering:** Only emails from subscribed contacts are saved; non-subscribers are silently dropped
+
 ### Design
 - **Color palette:** Navy (`#1a1a2e`, `#16213e`), Coral (`#e94560`, `#c23152`), Purple (`#533483`), Deep Blue (`#0f3460`)
 - Fully responsive sidebar with SendFlow branding
@@ -57,7 +67,7 @@ An original email marketing application built with Laravel, featuring campaign m
 | `sources` | Contact source/origin tracking |
 | `message_templates` | Email templates with name, subject, HTML body |
 | `campaigns` | Campaigns with status (draft/scheduled/sent), type, template |
-| `messages` | Message/Inbox records |
+| `messages` | Message/Inbox records — sender name/email, subject, body, linked contact, read/trash status, source type |
 
 ### Pivot Tables
 | Table | Purpose |
@@ -97,6 +107,21 @@ composer dev
 ```
 
 Starts the Laravel dev server (port 8000), queue worker, log tailing, and Vite HMR (port 5173).
+
+### Inbox & Inbound Email (Mailgun)
+
+1. Create a **Mailgun** account (free tier includes 1 inbound route)
+2. Add and verify a **custom domain** in Mailgun (or use the sandbox domain for testing)
+3. Set up an **inbound route** in Mailgun:
+   - Expression: `catch_all` (or `match_recipient(".*@yourdomain.com")`)
+   - Action: `Forward`
+   - Destination: `https://your-tunnel-url.ngrok-free.dev/webhooks/mailgun/inbound`
+4. Make your app publicly accessible (for local development):
+   ```bash
+   ngrok http 8088
+   ```
+5. The webhook endpoint is CSRF-exempt and responds with `200 OK` to all Mailgun requests
+6. Only emails from **subscribed contacts** are saved to the inbox; others are silently dropped
 
 ### SMTP (Gmail)
 1. Enable **2-factor authentication** on your Google account
@@ -154,6 +179,11 @@ Running `php artisan db:seed --class=SampleDataSeeder` creates:
 | `database/seeders/SampleDataSeeder.php` | Sample data for development |
 | `resources/views/dashboard/index.blade.php` | Dashboard with charts, stats, quick actions |
 | `resources/views/automations/` | Automation index, create, edit views |
+| `app/Http/Controllers/MailgunWebhookController.php` | Mailgun inbound webhook handler — parses sender/subject/body, links to contact, saves |
+| `app/Http/Controllers/InboxController.php` | Inbox view, mark-read, trash, delete actions |
+| `resources/views/audience/inbox.blade.php` | Inbox page with tabs, search, filters, message detail, actions |
+| `resources/views/audience/inbox-test.php` | Test form to simulate incoming emails |
+| `database/migrations/2026_06_25_062338_add_inbound_fields_to_messages_table.php` | Added sender fields, contact_id, read/trash status, source_type to messages |
 
 ## Routes
 
@@ -184,7 +214,16 @@ Running `php artisan db:seed --class=SampleDataSeeder` creates:
 - `GET /import-contacts` — CSV import
 - `GET /audience/dashboards` — Audience dashboard
 - `GET /audience/audience-tags` — Tag management
-- `GET /audience/inbox` — Inbox
+- `GET /audience/inbox` — Inbox (real messages from DB)
+- `POST /inbox/{id}/read` — Mark message as read
+- `POST /inbox/{id}/trash` — Move message to trash
+- `DELETE /inbox/{id}` — Permanently delete message
+
+### Webhooks
+- `POST /webhooks/mailgun/inbound` — Mailgun inbound email receiver (CSRF-exempt)
+
+### Testing
+- `GET /inbox/test` — Simulate an incoming email (fill form to create a test message in inbox)
 
 ### Templates
 - `GET /message-temp` — List templates

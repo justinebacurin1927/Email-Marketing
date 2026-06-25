@@ -9,6 +9,7 @@ use App\Http\Controllers\MessageTemplateController;
 use App\Http\Controllers\LabelController;
 
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\MailgunWebhookController;
 use App\Http\Controllers\ProfileController;
 
 // DASHBOARD & PAGES
@@ -58,6 +59,9 @@ Route::get('/contacts/export', [ContactController::class, 'export'])->name('cont
 // AUDIENCE - INBOX
 Route::get('/audience/inbox', [InboxController::class, 'index'])->name('inbox');
 Route::get('/inbox-settings', [InboxController::class, 'settings'])->name('inbox.settings');
+Route::post('/inbox/{message}/read', [InboxController::class, 'markRead'])->name('inbox.mark-read');
+Route::post('/inbox/{message}/trash', [InboxController::class, 'trash'])->name('inbox.trash');
+Route::delete('/inbox/{message}', [InboxController::class, 'destroy'])->name('inbox.destroy');
 
 // AUDIENCE - LABELS
 Route::get('audience/add-labels', [LabelController::class, 'index'])->name('labels.index');
@@ -84,3 +88,21 @@ Route::put('/profile', [ProfileController::class, 'update'])->name('profile.upda
 Route::put('/profile/password', [ProfileController::class, 'password'])->name('profile.password');
 Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar.upload');
 Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');
+
+// WEBHOOKS
+Route::post('/webhooks/mailgun/inbound', [MailgunWebhookController::class, 'inbound'])->name('webhooks.mailgun.inbound');
+
+// TEST — simulate receiving an email (remove later)
+Route::get('/inbox/test', function () {
+    return view('audience.inbox-test');
+});
+Route::post('/inbox/test', function (\Illuminate\Http\Request $request) {
+    \App\Models\Message::create([
+        'sender_name' => $request->name,
+        'sender_email' => $request->email,
+        'subject' => $request->subject,
+        'body' => $request->body,
+        'source_type' => 'email_marketing',
+    ]);
+    return redirect('/audience/inbox');
+});

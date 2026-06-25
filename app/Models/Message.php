@@ -9,11 +9,25 @@ class Message extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['source_id', 'body'];
+    protected $fillable = [
+        'source_id',
+        'sender_name',
+        'sender_email',
+        'subject',
+        'body',
+        'contact_id',
+        'is_read',
+        'is_trashed',
+        'source_type',
+    ];
 
-    // Relation: a message belongs to a source
     public function source()
     {
         return $this->belongsTo(Source::class);
+    }
+
+    public function contact()
+    {
+        return $this->belongsTo(Contact::class);
     }
 }
