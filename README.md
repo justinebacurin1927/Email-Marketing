@@ -89,7 +89,67 @@ An original email marketing application built with Laravel, featuring campaign m
 | `campaigns` (columns) | `send_date`, `sent_at`, `template_id`, `created_by` |
 | `message_templates` (columns) | `subject`, `body`, `name` |
 
-## Setup
+## Deployment
+
+### Infrastructure
+
+| Service | Provider | Purpose |
+|---|---|---|
+| **Web Hosting** | [Render](https://render.com) (Free Tier) | PHP app server via Docker |
+| **Database** | [Supabase](https://supabase.com) (Free Tier) | PostgreSQL 15 |
+| **Uptime Monitoring** | [UptimeRobot](https://uptimerobot.com) (Free Tier) | Prevents Render sleep |
+
+### Live URL
+
+```
+https://sendflow-email-marketing.onrender.com
+```
+
+### Render Setup
+
+1. Fork/push this repo to GitHub
+2. On Render → **New Web Service** → connect repo
+3. Select **Docker** runtime (port **8000**)
+4. Build and deploy — the Dockerfile and `start.sh` handle the rest
+
+The `start.sh` entrypoint generates the `.env` from Render env vars, runs migrations, and starts the Laravel dev server.
+
+### Supabase (PostgreSQL)
+
+- Project ID: `otdxrliltlvtxkdfwyfr`
+- Session pooler host: `aws-1-ap-southeast-1.pooler.supabase.com:5432`
+- Username: `postgres.otdxrliltlvtxkdfwyfr`
+
+### Environment Variables (Render Dashboard)
+
+| Key | Value |
+|---|---|
+| `APP_KEY` | `base64:3dS7foK5bGHreglO6hisBAh/pE8EvNQDPVN9lMmhN4M=` |
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `APP_URL` | `https://sendflow-email-marketing.onrender.com` |
+| `DB_CONNECTION` | `pgsql` |
+| `DB_HOST` | `aws-1-ap-southeast-1.pooler.supabase.com` |
+| `DB_PORT` | `5432` |
+| `DB_DATABASE` | `postgres` |
+| `DB_USERNAME` | `postgres.otdxrliltlvtxkdfwyfr` |
+| `DB_PASSWORD` | *(set in Render)* |
+| `DB_SSLMODE` | `require` |
+| `MAIL_MAILER` | `smtp` |
+| `MAIL_HOST` | `smtp.gmail.com` |
+| `MAIL_PORT` | `587` |
+| `MAIL_USERNAME` | *(Gmail address)* |
+| `MAIL_PASSWORD` | *(Gmail App Password)* |
+| `MAIL_ENCRYPTION` | `tls` |
+| `MAIL_FROM_ADDRESS` | *(Gmail address)* |
+
+### Note on Render Free Tier
+
+The free tier **spins down after 15 minutes** of inactivity. [UptimeRobot](https://uptimerobot.com) pings the app every 5 minutes to keep it warm. Cold starts take ~30-60s on wake.
+
+---
+
+## Local Setup
 
 ```bash
 cp .env.example .env
@@ -108,22 +168,37 @@ composer dev
 
 Starts the Laravel dev server (port 8000), queue worker, log tailing, and Vite HMR (port 5173).
 
-### Inbox & Inbound Email (Mailgun)
+### Docker (Local)
+
+```bash
+docker compose up -d
+```
+
+Uses MySQL locally via `docker-compose.yml` (separate from production PostgreSQL on Supabase).
+
+---
+
+## Inbox & Inbound Email (Mailgun)
 
 1. Create a **Mailgun** account (free tier includes 1 inbound route)
 2. Add and verify a **custom domain** in Mailgun (or use the sandbox domain for testing)
 3. Set up an **inbound route** in Mailgun:
    - Expression: `catch_all` (or `match_recipient(".*@yourdomain.com")`)
    - Action: `Forward`
-   - Destination: `https://your-tunnel-url.ngrok-free.dev/webhooks/mailgun/inbound`
-4. Make your app publicly accessible (for local development):
-   ```bash
-   ngrok http 8088
-   ```
-5. The webhook endpoint is CSRF-exempt and responds with `200 OK` to all Mailgun requests
-6. Only emails from **subscribed contacts** are saved to the inbox; others are silently dropped
+   - Destination: `https://sendflow-email-marketing.onrender.com/webhooks/mailgun/inbound`
+4. The webhook endpoint is CSRF-exempt and responds with `200 OK` to all Mailgun requests
+5. Only emails from **subscribed contacts** are saved to the inbox; others are silently dropped
 
-### SMTP (Gmail)
+### Local Inbound Testing
+
+For local development, make your app publicly accessible:
+```bash
+ngrok http 8088
+```
+Then point your Mailgun inbound route to the ngrok URL.
+
+## SMTP (Gmail)
+
 1. Enable **2-factor authentication** on your Google account
 2. Generate an **App Password** at https://myaccount.google.com/apppasswords
 3. Set in `.env`:
@@ -137,7 +212,8 @@ MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS="your.email@gmail.com"
 ```
 
-### Scheduler (Required for Automations + Scheduled Campaigns)
+## Scheduler (Required for Automations + Scheduled Campaigns)
+
 ```bash
 php artisan schedule:work
 ```
@@ -164,10 +240,22 @@ Running `php artisan db:seed --class=SampleDataSeeder` creates:
 | `campaigns:send-scheduled` | Every minute | Sends campaigns with `scheduled` status whose `send_date` has passed |
 | `automations:process` | Every minute | Processes active automation triggers and executes pending steps |
 
+## Architecture
+
+```
+Dockerfile          → Production image (Render) — PostgreSQL + pdo_pgsql
+docker-compose.yml  → Local development — MySQL + phpMyAdmin
+start.sh            → Entrypoint — generates .env, runs migrations, starts server
+```
+
 ## Key Files
 
 | File | Purpose |
 |---|---|
+| `Dockerfile` | Production Docker image for Render (PHP 8.2, PostgreSQL extensions, Node 20) |
+| `start.sh` | Container entrypoint — creates `.env` from env vars, runs migrations, starts server |
+| `docker-compose.yml` | Local dev stack — Laravel + MySQL + phpMyAdmin |
+| `.env.example` | Environment template (PostgreSQL defaults) |
 | `app/Mail/CampaignMail.php` | Mailable for single-contact campaign sends |
 | `app/Mail/CampaignMailForContact.php` | Mailable for automation-triggered sends |
 | `app/Jobs/SendCampaignJob.php` | Queueable job dispatching campaign emails |
