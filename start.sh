@@ -1,8 +1,9 @@
 #!/bin/sh
 set -e
 
+# Create a minimal .env with only APP_KEY (Render env vars handle the rest)
 if [ ! -f .env ]; then
-    cp .env.example .env
+    echo 'APP_KEY=base64:3dS7foK5bGHreglO6hisBAh/pE8EvNQDPVN9lMmhN4M=' > .env
 fi
 
 php artisan migrate --force
