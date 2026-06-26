@@ -21,8 +21,8 @@ COPY . .
 # Install Laravel PHP dependencies
 RUN composer install
 
-# Install Node dependencies (Tailwind/Vite)
-RUN npm install
+# Install Node dependencies (Tailwind/Vite) and build assets
+RUN npm install && npm run build
 
 # Copy entrypoint script
 COPY start.sh /start.sh
