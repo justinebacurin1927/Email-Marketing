@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Notifications\InboundMessageNotification;
 use Illuminate\Http\Request;
 use App\Models\Message;
 use App\Models\Contact;
@@ -29,7 +31,7 @@ class MailgunWebhookController extends Controller
 
         $contact = Contact::where('email', $senderEmail)->where('subscribed', true)->first();
 
-        Message::create([
+        $message = Message::create([
             'source_id' => $source?->id,
             'sender_name' => $senderName,
             'sender_email' => $senderEmail,
@@ -38,6 +40,10 @@ class MailgunWebhookController extends Controller
             'contact_id' => $contact?->id,
             'source_type' => 'email_marketing',
         ]);
+
+        foreach (User::all() as $user) {
+            $user->notify(new InboundMessageNotification($message));
+        }
 
         return response('OK', 200);
     }

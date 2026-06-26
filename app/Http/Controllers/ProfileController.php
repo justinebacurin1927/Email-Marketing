@@ -10,12 +10,6 @@ class ProfileController extends Controller
 {
     public function index()
     {
-        if (!auth()->check()) {
-            $user = \App\Models\User::first();
-            if ($user) {
-                auth()->login($user);
-            }
-        }
         return view('profile.index');
     }
 

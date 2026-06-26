@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Campaign;
 use App\Models\MessageTemplate;
 use App\Models\Contact;
+use App\Notifications\CampaignNotification;
 use App\Models\Tag;
 use App\Jobs\SendCampaignJob;
 
@@ -156,6 +157,8 @@ class CampaignController extends Controller
         }
 
         SendCampaignJob::dispatchSync($campaign);
+
+        auth()->user()->notify(new CampaignNotification($campaign, 'sent'));
 
         return redirect()->route('campaigns.index')
             ->with('success', 'Campaign sent to ' . $recipients->count() . ' recipient(s)!');

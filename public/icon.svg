@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="#e94560" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+
+  <!-- Tilted bottle -->
+  <g transform="rotate(-18 16 16)">
+    <!-- Bottle outline -->
+    <path d="M14 6h4v3l1.6 2.2V22a2 2 0 0 1-2 2h-3.2a2 2 0 0 1-2-2V11.2L14 9V6Z"></path>
+
+    <!-- Solid cork -->
+    <rect x="14" y="4.5" width="4" height="1.5" fill="#e94560" stroke="none"></rect>
+
+    <!-- Letter inside -->
+    <path d="M13.8 13.5h4.4"></path>
+    <path d="M13.8 16h4.4"></path>
+    <path d="M13.8 18.5h4.4"></path>
+  </g>
+
+  <!-- Single wave beneath -->
+  <path d="M7 27c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1 2-1 4-1"></path>
+</svg>

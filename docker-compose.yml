@@ -13,33 +13,38 @@ services:
       - .:/var/www/html
     depends_on:
       - db
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: laravel
+      DB_USERNAME: laravel
+      DB_PASSWORD: laravel
     command: >
       sh -c "npm install && npm run dev & php artisan serve --host=0.0.0.0 --port=8000"
 
   db:
-    image: mysql:8
-    container_name: mysql_db
+    image: postgres:16
+    container_name: pgsql_db
     restart: always
     environment:
-      MYSQL_DATABASE: laravel
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel
+      POSTGRES_DB: laravel
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: laravel
     ports:
-      - "3306:3306"
+      - "5433:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
     restart: always
     ports:
       - "8080:80"
     environment:
-      PMA_HOST: db
-      PMA_USER: laravel
-      PMA_PASSWORD: laravel
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
     depends_on:
       - db
 

@@ -9,19 +9,10 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-<body>
-  <div class="d-flex">
-    @include('layouts.sidebar')
-    <div class="flex-grow-1" style="background-color: #f5f6fa; min-height: 100vh;">
-      @include('components.topbar')
-      <div style="margin-top: 3.5rem;">
-        {{ $slot }}
-      </div>
-    </div>
+<body style="min-height: 100vh; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);">
+  <div class="d-flex align-items-center justify-content-center" style="min-height: 100vh; padding: 2rem;">
+    {{ $slot }}
   </div>
-  <x-notification-panel />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>const csrfToken = '{{ csrf_token() }}';</script>
-  @vite(['resources/js/app.js', 'resources/js/notification.js'])
 </body>
 </html>

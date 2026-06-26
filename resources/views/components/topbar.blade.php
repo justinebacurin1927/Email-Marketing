@@ -5,8 +5,14 @@
     <div class="d-flex align-items-center gap-2">
       <span class="text-muted small" id="liveDateTime"></span>
     </div>
-    @php $user = auth()->user(); @endphp
-    <a href="{{ route('profile.index') }}" class="d-flex align-items-center gap-3 text-decoration-none">
+    <div class="d-flex align-items-center gap-3">
+      <button onclick="openNotificationPanel()" class="btn btn-sm position-relative bg-transparent border-0 p-1" style="font-size: 1.2rem;">
+        <i class="bi bi-bell text-muted"></i>
+        <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill d-none"
+          style="background: #e94560; font-size: 0.6rem; min-width: 18px; height: 18px; line-height: 18px; padding: 0 4px;">0</span>
+      </button>
+      @php $user = auth()->user(); @endphp
+      <a href="{{ route('profile.index') }}" class="d-flex align-items-center gap-3 text-decoration-none">
       <span class="text-muted small">{{ $user->name ?? 'Guest' }}</span>
       @if($user && $user->avatar_url)
         <img src="{{ $user->avatar_url }}" alt="Avatar"

@@ -16,12 +16,12 @@
         <small class="text-secondary px-2" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">User</small>
         <ul class="list-unstyled mt-1">
           <li>
-            <a href="{{ route('profile.index') }}" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link active-nav" style="font-size: 0.85rem;">
+            <a href="{{ route('profile.index') }}" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link active-nav" style="font-size: 0.85rem; color: #e94560;">
               <i class="bi bi-person"></i> Profile
             </a>
           </li>
           <li>
-            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem; padding-left: 2.2rem !important;">
+            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem; padding-left: 2.2rem !important; color: #e94560;">
               <i class="bi bi-bell"></i> Notifications
             </a>
           </li>
@@ -32,12 +32,12 @@
         <small class="text-secondary px-2" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Workspace</small>
         <ul class="list-unstyled mt-1">
           <li>
-            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem;">
+            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem; color: #e94560;">
               <i class="bi bi-gear"></i> General
             </a>
           </li>
           <li>
-            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem;">
+            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem; color: #e94560;">
               <i class="bi bi-palette"></i> Branding
             </a>
           </li>
@@ -48,12 +48,12 @@
         <small class="text-secondary px-2" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Other</small>
         <ul class="list-unstyled mt-1">
           <li>
-            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem;">
+            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem; color: #e94560;">
               <i class="bi bi-credit-card"></i> Billing
             </a>
           </li>
           <li>
-            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem;">
+            <a href="#" class="d-flex align-items-center gap-2 px-2 py-1.5 rounded text-decoration-none settings-nav-link" style="font-size: 0.85rem; color: #e94560;">
               <i class="bi bi-people"></i> Team
             </a>
           </li>
@@ -242,18 +242,18 @@
 
 <style>
   .settings-nav-link {
-    color: #495057;
+    color: #e94560;
     transition: all 0.15s;
     padding-top: 0.375rem;
     padding-bottom: 0.375rem;
   }
   .settings-nav-link:hover {
-    background-color: #e9ecef;
-    color: #1a1a2e;
+    background-color: #fce4e8;
+    color: #d63350;
   }
   .settings-nav-link.active-nav {
-    background-color: #e9ecef;
-    color: #1a1a2e;
+    background-color: #fce4e8;
+    color: #e94560;
     font-weight: 600;
   }
   .security-list a:hover {

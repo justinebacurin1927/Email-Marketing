@@ -6,6 +6,7 @@
     <div class="d-flex align-items-center justify-content-between">
       <div class="dropdown">
         <button class="btn btn-sm dropdown-toggle text-white border-0 d-flex align-items-center gap-2" style="background: transparent; padding: 0;" data-bs-toggle="dropdown">
+          <img src="{{ asset('icon.svg') }}" alt="" style="width: 1.2rem; height: 1.2rem;">
           <span style="color: #e94560; font-weight: 700; font-size: 1rem;">SendFlow</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-dark">
@@ -129,6 +130,12 @@
           <span>Profile</span>
         </a>
       </li>
+      <li class="mb-1">
+        <a href="{{ route('help.index') }}" class="d-flex align-items-center gap-2 p-2 rounded text-decoration-none sidebar-link{{ request()->routeIs('help.*') ? ' sidebar-active' : '' }}">
+          <i class="bi bi-question-circle" style="width: 20px;"></i>
+          <span>Help</span>
+        </a>
+      </li>
     </ul>
 
     <div class="px-3 mb-1">
@@ -169,8 +176,10 @@
     </div>
     <div class="d-flex gap-2">
       <a href="{{ route('profile.index') }}" class="text-secondary text-decoration-none sidebar-icon" title="Profile"><i class="bi bi-person"></i></a>
-      <a href="#" class="text-secondary text-decoration-none sidebar-icon" title="Help"><i class="bi bi-question-circle"></i></a>
+      <a href="{{ route('help.index') }}" class="text-secondary text-decoration-none sidebar-icon" title="Help"><i class="bi bi-question-circle"></i></a>
+      <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="text-secondary text-decoration-none sidebar-icon" title="Logout"><i class="bi bi-box-arrow-right"></i></a>
     </div>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
   </div>
 </aside>
 
