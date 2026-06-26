@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
             'webhooks/mailgun/inbound',
+            'login/guest',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
