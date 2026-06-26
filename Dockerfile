@@ -2,8 +2,8 @@ FROM php:8.2-fpm
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
-    zip unzip curl libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev git libicu-dev libpq-dev \
-    && docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd dom xml intl
+    zip unzip curl libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev git libicu-dev libpq-dev libzip-dev \
+    && docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd dom xml intl zip
 
 # Install Node.js and npm (Node 20)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
