@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm install && npm run build",
-  "installCommand": "npm install && composer install --no-dev --no-interaction --prefer-dist",
+  "installCommand": "npm install && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && composer install --no-dev --no-interaction --prefer-dist",
   "outputDirectory": "public",
   "framework": null,
   "functions": {
