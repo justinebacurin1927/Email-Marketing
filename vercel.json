@@ -1,0 +1,43 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "installCommand": "npm install && composer install --no-dev --no-interaction --prefer-dist",
+  "outputDirectory": "public",
+  "framework": null,
+  "functions": {
+    "api/**/*.php": {
+      "runtime": "vercel-php@8.2",
+      "includeFiles": [
+        "vendor/**",
+        "app/**",
+        "bootstrap/**",
+        "config/**",
+        "database/**",
+        "public/**",
+        "resources/**",
+        "routes/**",
+        "storage/**",
+        ".env"
+      ]
+    }
+  },
+  "routes": [
+    {
+      "src": "^/build/(.*)",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
+    },
+    {
+      "src": "^/(.*)",
+      "dest": "api/index.php"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/scheduler",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/queue",
+      "schedule": "* * * * *"
+    }
+  ]
+}
