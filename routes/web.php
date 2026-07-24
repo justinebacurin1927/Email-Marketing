@@ -30,6 +30,25 @@ Route::post('/reset-password', [App\Http\Controllers\Auth\ResetPasswordControlle
 // WEBHOOKS (no auth)
 Route::post('/webhooks/mailgun/inbound', [MailgunWebhookController::class, 'inbound'])->name('webhooks.mailgun.inbound');
 
+// CRON ENDPOINTS (protected by token, no auth required)
+Route::post('/cron/scheduler', function (\Illuminate\Http\Request $request) {
+    $token = env('CRON_TOKEN');
+    if ($token && $request->header('X-Cron-Token') !== $token) {
+        abort(403, 'Invalid cron token');
+    }
+    $exitCode = Artisan::call('schedule:run');
+    return response()->json(['status' => 'ok', 'exit_code' => $exitCode]);
+})->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
+Route::post('/cron/queue', function (\Illuminate\Http\Request $request) {
+    $token = env('CRON_TOKEN');
+    if ($token && $request->header('X-Cron-Token') !== $token) {
+        abort(403, 'Invalid cron token');
+    }
+    $exitCode = Artisan::call('queue:work', ['--once' => true, '--stop-when-empty' => true]);
+    return response()->json(['status' => 'ok', 'exit_code' => $exitCode]);
+})->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
 // AUTHENTICATED ROUTES
 Route::middleware('auth')->group(function () {
 

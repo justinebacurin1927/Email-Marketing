@@ -19,14 +19,5 @@
       "dest": "api/index.php"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/cron/scheduler",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/cron/queue",
-      "schedule": "* * * * *"
-    }
-  ]
+  "crons": []
 }

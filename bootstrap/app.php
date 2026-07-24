@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhooks/mailgun/inbound',
             'login/guest',
+            'cron/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
