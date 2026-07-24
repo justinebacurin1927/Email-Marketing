@@ -1,12 +1,10 @@
 {
   "buildCommand": "npm install && npm run build",
-  "installCommand": "npm install && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && composer install --no-dev --no-interaction --prefer-dist",
   "outputDirectory": "public",
   "framework": null,
   "functions": {
     "api/**/*.php": {
-      "runtime": "vercel-php@0.9.0",
-      "includeFiles": "**"
+      "runtime": "vercel-php@0.9.0"
     }
   },
   "routes": [
@@ -18,6 +16,5 @@
       "src": "^/(.*)",
       "dest": "api/index.php"
     }
-  ],
-  "crons": []
+  ]
 }
