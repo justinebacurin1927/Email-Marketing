@@ -9,29 +9,26 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// Suppress PHP 8.5 deprecation notices (they break vercel-php output capture)
+error_reporting(E_ALL & ~E_DEPRECATED);
+
 // Autoload
 require __DIR__ . '/../vendor/autoload.php';
 
 // Bootstrap Laravel
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// Handle the request via the HTTP kernel
+// Handle the request
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 
 $response = $kernel->handle(
     $request = Request::capture()
 );
 
-// Send headers
-foreach ($response->headers->all() as $name => $values) {
-    foreach ($values as $value) {
-        header("$name: $value", false);
-    }
-}
+// Send response headers
+$response->sendHeaders();
 
-http_response_code($response->getStatusCode());
-
-// Output content (vercel-php captures this)
+// Output content (vercel-php captures stdout)
 echo $response->getContent();
 
 // Terminate
