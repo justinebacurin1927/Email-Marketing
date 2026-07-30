@@ -20,25 +20,4 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })
-    ->withProviders([
-        // Framework providers needed for views, sessions, mail, queue, etc.
-        Illuminate\View\ViewServiceProvider::class,
-        Illuminate\Session\SessionServiceProvider::class,
-        Illuminate\Foundation\Providers\FoundationServiceProvider::class,
-        Illuminate\Mail\MailServiceProvider::class,
-        Illuminate\Notifications\NotificationServiceProvider::class,
-        Illuminate\Queue\QueueServiceProvider::class,
-        Illuminate\Database\DatabaseServiceProvider::class,
-        Illuminate\Filesystem\FilesystemServiceProvider::class,
-        Illuminate\Cache\CacheServiceProvider::class,
-        Illuminate\Cookie\CookieServiceProvider::class,
-        Illuminate\Encryption\EncryptionServiceProvider::class,
-        Illuminate\Validation\ValidationServiceProvider::class,
-        Illuminate\Pagination\PaginationServiceProvider::class,
-        Illuminate\Auth\AuthServiceProvider::class,
-        Illuminate\Auth\Passwords\PasswordResetServiceProvider::class,
-        Illuminate\Translation\TranslationServiceProvider::class,
-        Illuminate\Bus\BusServiceProvider::class,
-        Illuminate\Hashing\HashServiceProvider::class,
-    ])
     ->create();
