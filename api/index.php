@@ -2,34 +2,33 @@
 
 /**
  * Laravel on Vercel — Serverless entry point.
- * Vercel routes all requests through this single file.
  */
-
-use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// Suppress PHP 8.5 deprecation notices (they break vercel-php output capture)
 error_reporting(E_ALL & ~E_DEPRECATED);
 
-// Autoload
 require __DIR__ . '/../vendor/autoload.php';
 
-// Bootstrap Laravel
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+try {
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// Handle the request
-$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 
-$response = $kernel->handle(
-    $request = Request::capture()
-);
+    $request = Illuminate\Http\Request::capture();
 
-// Send response headers
-$response->sendHeaders();
+    $response = $kernel->handle($request);
 
-// Output content (vercel-php captures stdout)
-echo $response->getContent();
+    // Send response (vercel-php captures stdout as the return body)
+    $response->send();
 
-// Terminate
-$kernel->terminate($request, $response);
+    $kernel->terminate($request, $response);
+} catch (\Throwable $e) {
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+    ]);
+}
